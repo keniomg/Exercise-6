@@ -1,0 +1,38 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace oopTask1
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Player player = new Player(01234, "Pro100_ubiica", "Rogue", 80);
+            player.ShowPlayerInfo();
+        }
+    }
+
+    public class Player
+    {
+        public int Id;
+        public string Name;
+        public string CharacterClass;
+        public int Level;
+
+        public Player(int id, string name, string characterClass, int level)
+        {
+            Id = id;
+            Name = name;
+            CharacterClass = characterClass;
+            Level = level;
+        }
+
+        public void ShowPlayerInfo()
+        {
+            Console.WriteLine($"ID - {Id}\nName - {Name}\nClass - {CharacterClass}\nLevel - {Level}");
+        }
+    }
+}
