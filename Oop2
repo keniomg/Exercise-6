@@ -1,0 +1,44 @@
+using System;
+
+namespace oopTask2
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Player player = new Player('A', 4, 3);
+            Renderer renderer = new Renderer();
+            renderer.DrawPlayer(player);
+        }
+    }
+
+    public class Player
+    {
+        public char PlayerChar;
+        public int PlayerPositionX;
+        public int PlayerPositionY;
+
+        public Player(char playerChar, int playerPositionX, int playerPositionY)
+        {
+            PlayerChar = playerChar;
+            PlayerPositionX = playerPositionX;
+            PlayerPositionY = playerPositionY;
+        }
+
+        public Player()
+        {
+            PlayerChar = '@';
+            PlayerPositionX = 0;
+            PlayerPositionY = 0;
+        }
+    }
+
+    public class Renderer
+    {
+        public void DrawPlayer(Player player)
+        {
+            Console.SetCursorPosition(player.PlayerPositionX, player.PlayerPositionY);
+            Console.WriteLine(player.PlayerChar);
+        }
+    }
+}
