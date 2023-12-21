@@ -7,28 +7,28 @@ namespace oopTask1
         static void Main(string[] args)
         {
             Player player = new Player(01234, "Pro100_ubiica", "Rogue", 80);
-            player.ShowPlayerInfo();
+            player.ShowInfo();
         }
     }
 
     public class Player
     {
-        public int Id;
-        public string Name;
-        public string CharacterClass;
-        public int Level;
+        int _id;
+        string _name;
+        string _characterClass;
+        int _level;
 
         public Player(int id, string name, string characterClass, int level)
         {
-            Id = id;
-            Name = name;
-            CharacterClass = characterClass;
-            Level = level;
+            _id = id;
+            _name = name;
+            _characterClass = characterClass;
+            _level = level;
         }
 
-        public void ShowPlayerInfo()
+        public void ShowInfo()
         {
-            Console.WriteLine($"ID - {Id}\nName - {Name}\nClass - {CharacterClass}\nLevel - {Level}");
+            Console.WriteLine($"ID - {_id}\nName - {_name}\nClass - {_characterClass}\nLevel - {_level}");
         }
     }
 }
