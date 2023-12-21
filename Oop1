@@ -13,10 +13,10 @@ namespace oopTask1
 
     public class Player
     {
-        int _id;
-        string _name;
-        string _characterClass;
-        int _level;
+        private int _id;
+        private string _name;
+        private string _characterClass;
+        private int _level;
 
         public Player(int id, string name, string characterClass, int level)
         {
