@@ -14,22 +14,22 @@ namespace oopTask2
 
     public class Player
     {
-        public char PlayerChar;
-        public int PlayerPositionX;
-        public int PlayerPositionY;
+        public char Char;
+        public int PositionX;
+        public int PositionY;
 
         public Player(char playerChar, int playerPositionX, int playerPositionY)
         {
-            PlayerChar = playerChar;
-            PlayerPositionX = playerPositionX;
-            PlayerPositionY = playerPositionY;
+            Char = playerChar;
+            PositionX = playerPositionX;
+            PositionY = playerPositionY;
         }
 
         public Player()
         {
-            PlayerChar = '@';
-            PlayerPositionX = 0;
-            PlayerPositionY = 0;
+            Char = '@';
+            PositionX = 0;
+            PositionY = 0;
         }
     }
 
@@ -37,8 +37,8 @@ namespace oopTask2
     {
         public void DrawPlayer(Player player)
         {
-            Console.SetCursorPosition(player.PlayerPositionX, player.PlayerPositionY);
-            Console.WriteLine(player.PlayerChar);
+            Console.SetCursorPosition(player.PositionX, player.PositionY);
+            Console.WriteLine(player.Char);
         }
     }
 }
