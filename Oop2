@@ -14,22 +14,33 @@ namespace oopTask2
 
     public class Player
     {
-        public char Char;
-        public int PositionX;
-        public int PositionY;
+        private char _char;
+        private int _positionX;
+        private int _positionY;
 
-        public Player(char playerChar, int playerPositionX, int playerPositionY)
+        public char Char
+        {
+            get { return _char; }
+            set { _char = value; }
+        }
+
+        public int PositionX
+        {
+            get { return _positionX; }
+            private set { _positionX = value; }
+        }
+
+        public int PositionY
+        {
+            get { return _positionY; }
+            private set { _positionY = value; }
+        }
+
+        public Player(char playerChar = '@', int playerPositionX = 0, int playerPositionY = 0)
         {
             Char = playerChar;
             PositionX = playerPositionX;
             PositionY = playerPositionY;
-        }
-
-        public Player()
-        {
-            Char = '@';
-            PositionX = 0;
-            PositionY = 0;
         }
     }
 
