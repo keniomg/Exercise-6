@@ -6,7 +6,7 @@ namespace oopTask2
     {
         static void Main(string[] args)
         {
-            Player player = new Player('A', 4, 3);
+            Player player = new Player('A', 14, 33);
             Renderer renderer = new Renderer();
             renderer.DrawPlayer(player);
         }
@@ -14,34 +14,19 @@ namespace oopTask2
 
     public class Player
     {
-        private char _char;
-        private int _positionX;
-        private int _positionY;
-
-        public char Char
-        {
-            get { return _char; }
-            set { _char = value; }
-        }
-
-        public int PositionX
-        {
-            get { return _positionX; }
-            private set { _positionX = value; }
-        }
-
-        public int PositionY
-        {
-            get { return _positionY; }
-            private set { _positionY = value; }
-        }
-
         public Player(char playerChar = '@', int playerPositionX = 0, int playerPositionY = 0)
         {
             Char = playerChar;
             PositionX = playerPositionX;
             PositionY = playerPositionY;
         }
+
+        public char Char { get; private set; }
+
+        public int PositionX { get; private set; }
+
+        public int PositionY { get; private set; }
+
     }
 
     public class Renderer
