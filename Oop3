@@ -1,0 +1,164 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace oopTask3
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            const string ShowInfoCommand = "1";
+            const string BanPlayerCommand = "2";
+            const string UnbanPlayerCommand = "3";
+            const string DeletePlayerCommand = "4";
+
+            List<Player> players = new List<Player> { new Player(1230, 14, "lox", false), new Player(4321, 22, "sas", false), new Player() };
+            PlayerList playerList = new PlayerList(players);
+            bool isOpen = true;
+            string userInput = null;
+
+            while (isOpen)
+            {
+                Console.WriteLine($"{ShowInfoCommand} - показать информацию об игроках" +
+                    $"\n{BanPlayerCommand} - забанить игрока\n{UnbanPlayerCommand} - разбанить игрока" +
+                    $"\n{DeletePlayerCommand} - удалить игрока\n");
+                userInput = Console.ReadLine();
+
+                switch (userInput)
+                {
+                    case ShowInfoCommand:
+                        ShowPlayersInfo(players);
+                        break;
+
+                    case BanPlayerCommand:
+                        playerList.Ban(players);
+                        break;
+
+                    case UnbanPlayerCommand:
+
+                        break;
+
+                    case DeletePlayerCommand:
+
+                        break;
+                }
+
+                Console.ReadKey();
+            }
+        }
+
+        static void ShowPlayersInfo(List<Player> players)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                players[i].ShowInfo();
+                Console.WriteLine();
+            }
+        }
+    }
+
+    public class Player
+    {
+        public int Id { get; private set; }
+        public int Level { get; private set; }
+        public string Name { get; private set; }
+        public bool IsBanned { get; private set; }
+
+        public Player()
+        {
+            Id = 1234;
+            Level = 1;
+            Name = "Nameless";
+            IsBanned = false;
+        }
+
+        public Player(int id, int level, string name, bool isBanned)
+        {
+            Id = id;
+            Level = level;
+            Name = name;
+            IsBanned = isBanned;
+        }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"ID - {Id}\nLevel - {Level}\nName - {Name}\nIs Banned - {IsBanned}");
+        }
+
+        public void Ban()
+        {
+            IsBanned = true;
+        }
+
+        public void Unban()
+        {
+            IsBanned = false;
+        }
+    }
+
+    public class PlayerList
+    {
+        List<Player> players = new List<Player>();
+
+        public PlayerList(List<Player> players)
+        {
+            this.players = players;
+        }
+
+        public void Ban(List<Player> players)
+        {
+            int id = 0;
+            Console.WriteLine("Введите id игрока\n");
+            string userInput = Console.ReadLine();
+
+            while (int.TryParse(userInput, out id) == false)
+            {
+                Console.Clear();
+                Console.WriteLine("Введите id игрока\n");
+                userInput = Console.ReadLine();
+            }
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].Id == id)
+                {
+                    players[i].Ban();
+                    break;
+                }
+            }
+
+            Console.WriteLine($"Игрок с ID - {id} забанен");
+            Console.ReadKey();
+        }
+
+        public void Unban(List<Player> players)
+        {
+            int id = 0;
+            Console.WriteLine("Введите id игрока\n");
+            string userInput = Console.ReadLine();
+
+            while (int.TryParse(userInput, out id) == false)
+            {
+                Console.Clear();
+                Console.WriteLine("Введите id игрока\n");
+                userInput = Console.ReadLine();
+            }
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].Id == id)
+                {
+                    players[i].Unban();
+                    break;
+                }
+            }
+
+            Console.WriteLine($"Игрок с ID - {id} разбанен");
+            Console.ReadKey();
+        }
+    }
+}
