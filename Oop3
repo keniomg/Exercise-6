@@ -11,6 +11,7 @@ namespace oopTask3
             const string BanPlayerCommand = "2";
             const string UnbanPlayerCommand = "3";
             const string DeletePlayerCommand = "4";
+            const string AddPlayerCommand = "5";
 
             List<Player> players = new List<Player> { new Player(1230, 14, "lox", false), new Player(4321, 22, "sas", false), new Player() };
             DataBase playerList = new DataBase(players);
@@ -22,26 +23,30 @@ namespace oopTask3
                 Console.Clear();
                 Console.WriteLine($"{ShowInfoCommand} - показать информацию об игроках" +
                     $"\n{BanPlayerCommand} - забанить игрока\n{UnbanPlayerCommand} - разбанить игрока" +
-                    $"\n{DeletePlayerCommand} - удалить игрока\n");
+                    $"\n{DeletePlayerCommand} - удалить игрока\n{AddPlayerCommand} - добавить игрока\n");
                 userInput = Console.ReadLine();
                 Console.Clear();
 
                 switch (userInput)
                 {
                     case ShowInfoCommand:
-                        ShowPlayersInfo(players);
+                        playerList.ShowInfo();
                         break;
 
                     case BanPlayerCommand:
-                        playerList.Ban(players);
+                        playerList.Ban();
                         break;
 
                     case UnbanPlayerCommand:
-                        playerList.Unban(players);
+                        playerList.Unban();
                         break;
 
                     case DeletePlayerCommand:
-                        playerList.DeletePlayer(players);
+                        playerList.DeletePlayer();
+                        break;
+
+                    case AddPlayerCommand:
+                        playerList.AddPlayer();
                         break;
 
                     default:
@@ -53,24 +58,10 @@ namespace oopTask3
                 Console.ReadKey();
             }
         }
-
-        static void ShowPlayersInfo(List<Player> players)
-        {
-            for (int i = 0; i < players.Count; i++)
-            {
-                players[i].ShowInfo();
-                Console.WriteLine();
-            }
-        }
     }
 
     public class Player
     {
-        public int Id { get; private set; }
-        public int Level { get; private set; }
-        public string Name { get; private set; }
-        public bool IsBanned { get; private set; }
-
         public Player()
         {
             Id = 1234;
@@ -86,6 +77,11 @@ namespace oopTask3
             Name = name;
             IsBanned = isBanned;
         }
+
+        public int Id { get; private set; }
+        public int Level { get; private set; }
+        public string Name { get; private set; }
+        public bool IsBanned { get; private set; }
 
         public void ShowInfo()
         {
@@ -105,14 +101,23 @@ namespace oopTask3
 
     public class DataBase
     {
-        List<Player> Players = new List<Player>();
-
         public DataBase(List<Player> players)
         {
-            Players = players;
+            _players = players;
         }
 
-        public void Ban(List<Player> players)
+        private List<Player> _players = new List<Player>();
+
+        public void ShowInfo()
+        {
+            for (int i = 0; i < _players.Count; i++)
+            {
+                _players[i].ShowInfo();
+                Console.WriteLine();
+            }
+        }
+
+        public void Ban()
         {
             int id = 0;
             Console.WriteLine("Введите id игрока\n");
@@ -126,13 +131,13 @@ namespace oopTask3
             }
             else
             {
-                for (int i = 0; i < players.Count; i++)
+                for (int i = 0; i < _players.Count; i++)
                 {
-                    if (players[i].Id == id)
+                    if (_players[i].Id == id)
                     {
-                        if (players[i].IsBanned == false)
+                        if (_players[i].IsBanned == false)
                         {
-                            players[i].Ban();
+                            _players[i].Ban();
                             isBanSuccessful = true;
                         }
                         else
@@ -155,7 +160,7 @@ namespace oopTask3
             }
         }
 
-        public void Unban(List<Player> players)
+        public void Unban()
         {
             int id = 0;
             Console.WriteLine("Введите id игрока\n");
@@ -169,18 +174,18 @@ namespace oopTask3
             }
             else
             {
-                for (int i = 0; i < players.Count; i++)
+                for (int i = 0; i < _players.Count; i++)
                 {
-                    if (players[i].Id == id)
+                    if (_players[i].Id == id)
                     {
-                        if (players[i].IsBanned == true)
+                        if (_players[i].IsBanned == true)
                         {
-                            players[i].Unban();
+                            _players[i].Unban();
                             isUnbanSuccessful = true;
                         }
                         else
                         {
-                            Console.WriteLine($"Игрок с ID - {id} не забанен");
+                            Console.WriteLine($"\nИгрок с ID - {id} не забанен");
                         }
 
                         break;
@@ -198,7 +203,7 @@ namespace oopTask3
             }
         }
 
-        public void DeletePlayer(List<Player> players)
+        public void DeletePlayer()
         {
             int id = 0;
             Console.WriteLine("Введите id игрока\n");
@@ -212,11 +217,11 @@ namespace oopTask3
             }
             else
             {
-                for (int i = 0; i < players.Count; i++)
+                for (int i = 0; i < _players.Count; i++)
                 {
-                    if (players[i].Id == id)
+                    if (_players[i].Id == id)
                     {
-                        players.RemoveAt(i);
+                        _players.RemoveAt(i);
                         isDeleteSuccessful = true;
                         break;
                     }
@@ -230,6 +235,76 @@ namespace oopTask3
                 {
                     Console.WriteLine($"\nНе удалось удалить игрока с ID - {id}");
                 }
+            }
+        }
+
+        public void AddPlayer()
+        {
+            int id = 0;
+            string name = null;
+            int level = 0;
+            bool isAddSuccessful = true;
+            Console.WriteLine("Введите id игрока\n");
+            string userInput = Console.ReadLine();
+
+            if (int.TryParse(userInput, out id) == false)
+            {
+                Console.Clear();
+                Console.WriteLine("ID игрока введён неверно");
+                isAddSuccessful = false;
+            }
+            else
+            {
+                for (int i = 0; i < _players.Count; i++)
+                {
+                    if (_players[i].Id == id)
+                    {
+                        Console.WriteLine("\nИгрок с таким ID уже есть");
+                        isAddSuccessful = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isAddSuccessful)
+            {
+                Console.Clear();
+                Console.WriteLine("Введите уровень игрока\n");
+                userInput = Console.ReadLine();
+
+                if (int.TryParse(userInput, out level) == false)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Уровень игрока введён неверно");
+                    isAddSuccessful = false;
+                }
+            }
+
+            if (isAddSuccessful)
+            {
+                Console.Clear();
+                Console.WriteLine("Введите имя игрока\n");
+                name = Console.ReadLine();
+
+                for (int i = 0; i < _players.Count; i++)
+                {
+                    if (_players[i].Name == name)
+                    {
+                        Console.WriteLine("\nИгрок с таким именем уже есть");
+                        isAddSuccessful = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isAddSuccessful)
+            {
+                _players.Add(new Player(id, level, name, false));
+                Console.WriteLine($"\nИгрок добавлен");
+            }
+            else
+            {
+                Console.WriteLine($"\nНе удалось добавить игрока");
             }
         }
     }
