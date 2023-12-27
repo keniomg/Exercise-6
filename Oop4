@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace oopTask4
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Player player = new Player();
+            List<Card> cards = new List<Card> { new Card("Черви", "Король"), new Card("Черви", "Дама"), new Card("Крести", "6") };
+            Deck deck = new Deck(cards);
+        }
+    }
+
+    public class Card
+    {
+        public string Suit { get; private set; }
+        public string Value { get; private set; }
+
+        public Card(string suit, string value)
+        {
+            Suit = suit;
+            Value = value;
+        }
+    }
+
+    public class Deck
+    {
+        private List<Card> _cards = new List<Card>();
+
+        public Deck(List<Card> cards)
+        {
+            _cards = cards;
+        }
+
+        public Card GetCard()
+        {
+            Random random = new Random();
+            int randomCardIndex = random.Next(0, _cards.Count);
+            Card takenCard = _cards[randomCardIndex];
+            _cards.RemoveAt(randomCardIndex);
+            return takenCard;
+        }
+
+        public void Refresh()
+        {
+
+        }
+    }
+
+    public class Player
+    {
+        private List<Card> cardsInHands = new List<Card>();
+    }
+}
