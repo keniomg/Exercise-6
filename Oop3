@@ -15,7 +15,7 @@ namespace oopTask3
 
             Database playerList = new Database();
             bool isOpen = true;
-            string userInput = null;
+            string userInput;
 
             while (isOpen)
             {
@@ -96,166 +96,103 @@ namespace oopTask3
 
         public void ShowInfo()
         {
-            for (int i = 0; i < _players.Count; i++)
+            if (_players.Count > 0)
             {
-                _players[i].ShowInfo();
-                Console.WriteLine();
-            }
-        }
-
-        private void TryGetPlayer(ref int id, ref bool isOperationSuccessful, ref Player player)
-        {
-            Console.WriteLine("Введите id игрока\n");
-            string userInput = Console.ReadLine();
-
-            if (int.TryParse(userInput, out id))
-            {
-                isOperationSuccessful = true;
+                for (int i = 0; i < _players.Count; i++)
+                {
+                    _players[i].ShowInfo();
+                    Console.WriteLine();
+                }
             }
             else
             {
-                Console.Clear();
-                Console.WriteLine("ID игрока введён неверно");
-                isOperationSuccessful = false;
-            }
-        }
-        public void WriteOperationResult(int id, bool isOperationSuccessful)
-        {
-            if (isOperationSuccessful)
-            {
-                Console.WriteLine($"\nУспешно выполнена операция с игроком с ID - {id}");
-            }
-            else
-            {
-                Console.WriteLine($"\nНе удалось выполнить операцию с игроком с ID - {id}");
+                Console.WriteLine("Список игроков пуст.");
             }
         }
 
         public void Ban()
         {
+            Player player;
             bool isOperationSuccessful = false;
-            int id = 0;
-            Player player = null;
-            TryGetPlayer(ref id, ref isOperationSuccessful, ref player);
 
-            if(isOperationSuccessful)
+            if (TryGetPlayer(out player, out bool isInputedIdCorrect))
             {
-                for (int i = 0; i < _players.Count; i++)
+                if (player.IsBanned == false)
                 {
-                    if (_players[i].Id == id)
-                    {
-                        if (_players[i].IsBanned == false)
-                        {
-                            _players[i].Ban();
-                            isOperationSuccessful = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"\nИгрок с ID - {id} уже забанен");
-                            isOperationSuccessful = false;
-                        }
-                    
-                        break;
-                    }
+                    player.Ban();
+                    Console.WriteLine($"Игрок с ID - {player.Id} теперь забанен\n");
+                    isOperationSuccessful = true;
                 }
-
-                WriteOperationResult(id, isOperationSuccessful);
+                else
+                {
+                    Console.WriteLine($"Игрок с ID - {player.Id} уже забанен\n");
+                }
             }
-        }
 
+            WriteOperationResult(isOperationSuccessful);
+        }
 
         public void Unban()
         {
+            Player player;
             bool isOperationSuccessful = false;
-            int id = 0;
-            Player player = null;
-            TryGetPlayer(ref id, ref isOperationSuccessful, ref player);
 
-            if(isOperationSuccessful)
+            if (TryGetPlayer(out player, out bool isInputedIdCorrect))
             {
-                for (int i = 0; i < _players.Count; i++)
+                if (player.IsBanned == true)
                 {
-                    if (_players[i].Id == id)
-                    {
-                        if (_players[i].IsBanned == true)
-                        {
-                            _players[i].Unban();
-                            isOperationSuccessful = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"\nИгрок с ID - {id} не забанен");
-                            isOperationSuccessful = false;
-                        }
-
-                        break;
-                    }
+                    player.Unban();
+                    isOperationSuccessful = true;
+                    Console.WriteLine($"Игрок с ID - {player.Id} теперь не забанен\n");
                 }
-
-                WriteOperationResult(id, isOperationSuccessful);
+                else
+                {
+                    Console.WriteLine($"Игрок с ID - {player.Id} ещё не забанен\n");
+                }
             }
+
+            WriteOperationResult(isOperationSuccessful);
         }
 
         public void DeletePlayer()
         {
-            int id = 0;
-            Console.WriteLine("Введите id игрока\n");
-            string userInput = Console.ReadLine();
             bool isOperationSuccessful = false;
+            Player player;
 
-            if (int.TryParse(userInput, out id) == false)
+            if (TryGetPlayer(out player, out bool isInputedIdCorrect))
             {
-                Console.Clear();
-                Console.WriteLine("ID игрока введён неверно");
+                _players.Remove(player);
+                isOperationSuccessful = true;
             }
-            else
-            {
-                for (int i = 0; i < _players.Count; i++)
-                {
-                    if (_players[i].Id == id)
-                    {
-                        _players.RemoveAt(i);
-                        isOperationSuccessful = true;
-                        break;
-                    }
-                }
 
-                if (isOperationSuccessful)
-                {
-                    Console.WriteLine($"\nИгрок с ID - {id} удалён");
-                }
-                else
-                {
-                    Console.WriteLine($"\nНе удалось удалить игрока с ID - {id}");
-                }
-            }
+            WriteOperationResult(isOperationSuccessful);
         }
 
         public void AddPlayer()
         {
+            Player player;
             int id = 0;
             string name = null;
             int level = 0;
             bool isAddSuccessful = true;
-            Console.WriteLine("Введите id игрока\n");
-            string userInput = Console.ReadLine();
-
-            if (int.TryParse(userInput, out id) == false)
-            {
-                Console.Clear();
-                Console.WriteLine("ID игрока введён неверно");
-                isAddSuccessful = false;
-            }
+            string userInput;
 
             if (isAddSuccessful)
             {
-                for (int i = 0; i < _players.Count; i++)
+                if (TryGetPlayer(out player, out bool isInputedIdCorrect))
                 {
-                    if (_players[i].Id == id)
+                    Console.WriteLine("Игрок с таким ID уже есть");
+                    isAddSuccessful = false;
+                }
+                else
+                {
+                    if (isInputedIdCorrect)
                     {
-                        Console.WriteLine("\nИгрок с таким ID уже есть");
+                        id = player.Id;
+                    }
+                    else
+                    {
                         isAddSuccessful = false;
-                        break;
                     }
                 }
             }
@@ -279,26 +216,64 @@ namespace oopTask3
                 Console.Clear();
                 Console.WriteLine("Введите имя игрока\n");
                 name = Console.ReadLine();
-
-                for (int i = 0; i < _players.Count; i++)
-                {
-                    if (_players[i].Name == name)
-                    {
-                        Console.WriteLine("\nИгрок с таким именем уже есть");
-                        isAddSuccessful = false;
-                        break;
-                    }
-                }
+                Console.Clear();
             }
 
             if (isAddSuccessful)
             {
                 _players.Add(new Player(id, level, name, false));
-                Console.WriteLine($"\nИгрок добавлен");
+                Console.WriteLine($"Игрок добавлен");
             }
             else
             {
                 Console.WriteLine($"\nНе удалось добавить игрока");
+            }
+        }
+
+        private bool TryGetPlayer(out Player player, out bool isInputedIdCorrect)
+        {
+            player = new Player();
+            bool isOperationSuccessful = false;
+            isInputedIdCorrect = true;
+            int id;
+            Console.WriteLine("Введите id игрока\n");
+            string userInput = Console.ReadLine();
+            Console.Clear();
+
+            if (int.TryParse(userInput, out id))
+            {
+                for (int i = 0; i < _players.Count; i++)
+                {
+                    if (_players[i].Id == id)
+                    {
+                        player = _players[i];
+                        isOperationSuccessful = true;
+                    }
+                }
+
+                if (isOperationSuccessful == false)
+                {
+                    player = new Player(id);
+                }
+            }
+            else
+            {
+                Console.WriteLine("ID игрока введено неверно.");
+                isInputedIdCorrect = false;
+            }
+
+            return isOperationSuccessful;
+        }
+
+        private void WriteOperationResult(bool isOperationSuccessful)
+        {
+            if (isOperationSuccessful)
+            {
+                Console.WriteLine("Успешно выполнена операция с игроком");
+            }
+            else
+            {
+                Console.WriteLine("Не удалось выполнить операцию с игроком");
             }
         }
     }
