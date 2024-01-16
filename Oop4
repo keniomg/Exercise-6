@@ -101,9 +101,7 @@ namespace oopTask4
             for (int i = _cardsInDeck.Count - 1; i >= 1; i--)
             {
                 int j = random.Next(i + 1);
-                Card tempCard = _cardsInDeck[j];
-                _cardsInDeck[j] = _cardsInDeck[i];
-                _cardsInDeck[i] = tempCard;
+                (_cardsInDeck[i], _cardsInDeck[j]) = (_cardsInDeck[j], _cardsInDeck[i]);
             }
 
             Console.WriteLine("Карты перемешаны");
