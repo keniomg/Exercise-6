@@ -10,6 +10,7 @@ namespace OopTask5
             const string FindBookWithYearOfIssueCommand = "1";
             const string FindBookWithAuthorCommand = "2";
             const string FindBookWithTitleCommand = "3";
+            const string ShowAllBooksCommand = "4";
 
             Library library = new Library();
             bool isWorking = true;
@@ -19,7 +20,8 @@ namespace OopTask5
                 Console.WriteLine($"Вы можете выполнить одну из следующих команд" +
                     $"\n\n{FindBookWithYearOfIssueCommand} - найти книги по году выпуска" +
                     $"\n\n{FindBookWithAuthorCommand} - найти книги по автору" +
-                    $"\n\n{FindBookWithTitleCommand} - найти книги по названию\n");
+                    $"\n\n{FindBookWithTitleCommand} - найти книги по названию" +
+                    $"\n\n{ShowAllBooksCommand} - показать все книги\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
@@ -35,6 +37,10 @@ namespace OopTask5
 
                     case FindBookWithTitleCommand: 
                         library.FindBookWithTitle();
+                        break;
+
+                    case ShowAllBooksCommand:
+                        library.ShowAllBooks();
                         break;
 
                     default:
@@ -72,6 +78,14 @@ namespace OopTask5
             new Book("Ни Сы", "Толстой Лев Николаевич", 1234),
             new Book("Как достать соседа", "Ким Чен Ын", 1488)
         };
+
+        public void ShowAllBooks()
+        {
+            foreach (Book book in _books)
+            {
+                Console.WriteLine($"{book.Title}, {book.Author}, {book.YearOfIssue}\n\n");
+            }
+        }
 
         public void FindBookWithAuthor()
         {
