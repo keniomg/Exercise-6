@@ -31,7 +31,7 @@ namespace oopTask4
                 switch (userInput)
                 {
                     case TakeCardFromDeckCommand:
-                        player.TakeCardFromDeck(cardList);
+                        player.TakeCard(cardList.GiveCard());
                         break;
 
                     case ShowCardsInHandCommand:
@@ -43,11 +43,11 @@ namespace oopTask4
                         break;
 
                     case MixCardsInDeckCommand:
-                        cardList.MixCardsInDeck(player);
+                        cardList.MixCards(player);
                         break;
 
                     case ShowCardsInDeckCommand:
-                        cardList.ShowCardsInDeck(player);
+                        cardList.ShowCards(player);
                         break;
 
                     default:
@@ -75,37 +75,42 @@ namespace oopTask4
 
     public class Deck
     {
-        private List<Card> _cardsInDeck = new List<Card> { new Card("Черви", "Король"), new Card("Черви", "Дама"), new Card("Крести", "6"), new Card("Крести", "8") };
+        Random random = new Random();
 
-        public void ShowCardsInDeck(Player player)
+        private List<Card> _cards = new List<Card> { new Card("Черви", "6"), new Card("Черви", "7"), new Card("Черви", "8"), new Card("Черви", "9"), 
+            new Card("Черви", "10"), new Card("Черви", "Валет"), new Card("Черви", "Дама"), new Card("Черви", "Король"), new Card("Черви", "Туз"), new Card("Буби", "6"), 
+            new Card("Буби", "7"), new Card("Буби", "8"), new Card("Буби", "9"), new Card("Буби", "10"), new Card("Буби", "Валет"), new Card("Буби", "Дама"), 
+            new Card("Буби", "Король"), new Card("Буби", "Туз"), new Card("Крести", "6"), new Card("Крести", "7"), new Card("Крести", "8"), new Card("Крести", "9"), 
+            new Card("Крести", "10"), new Card("Крести", "Валет"), new Card("Крести", "Дама"), new Card("Крести", "Король"), new Card("Крести", "Туз"), 
+            new Card("Пики", "6"), new Card("Пики", "7"), new Card("Пики", "8"), new Card("Пики", "9"), new Card("Пики", "10"), new Card("Пики", "Валет"), 
+            new Card("Пики", "Дама"), new Card("Пики", "Король"), new Card("Пики", "Туз") };
+
+        public void ShowCards(Player player)
         {
-            for (int i = 0; i < _cardsInDeck.Count; i++)
-                Console.WriteLine($"{_cardsInDeck[i].Suit}, {_cardsInDeck[i].Value}\n");
+            for (int i = 0; i < _cards.Count; i++)
+                Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
 
-            player.PressAnyKeyForContinue();
+            player.WritePressAnyKeyForContinueMessage();
         }
 
-        public Card DrawCardFromDeck()
+        public Card GiveCard()
         {
-            Random random = new Random();
-            int randomCardIndex = random.Next(0, _cardsInDeck.Count);
-            Card takenCard = _cardsInDeck[randomCardIndex];
-            _cardsInDeck.Remove(takenCard);
+            int randomCardIndex = random.Next(0, _cards.Count);
+            Card takenCard = _cards[randomCardIndex];
+            _cards.Remove(takenCard);
             return takenCard;
         }
 
-        public void MixCardsInDeck(Player player)
+        public void MixCards(Player player)
         {
-            Random random = new Random();
-
-            for (int i = _cardsInDeck.Count - 1; i >= 1; i--)
+            for (int i = _cards.Count - 1; i >= 1; i--)
             {
                 int j = random.Next(i + 1);
-                (_cardsInDeck[i], _cardsInDeck[j]) = (_cardsInDeck[j], _cardsInDeck[i]);
+                (_cards[i], _cards[j]) = (_cards[j], _cards[i]);
             }
 
             Console.WriteLine("Карты перемешаны");
-            player.PressAnyKeyForContinue();
+            player.WritePressAnyKeyForContinueMessage();
         }
     }
 
@@ -113,13 +118,13 @@ namespace oopTask4
     {
         private List<Card> _cardsInHand = new List<Card>();
 
-        public void TakeCardFromDeck(Deck deck)
+        public void TakeCard(Card card)
         {
             int maxCardsInHandCount = 3;
 
             if (_cardsInHand.Count < maxCardsInHandCount)
             {
-                _cardsInHand.Add(deck.DrawCardFromDeck());
+                _cardsInHand.Add(card);
                 Console.WriteLine($"Вы взяли из колоды карту, теперь в вашей руке карт: {_cardsInHand.Count}.");
             }
             else
@@ -127,7 +132,7 @@ namespace oopTask4
                 Console.WriteLine("В вашей руке уже достаточно карт.");
             }
 
-            PressAnyKeyForContinue();
+            WritePressAnyKeyForContinueMessage();
         }
 
         public void ShowCardsInHand()
@@ -142,7 +147,7 @@ namespace oopTask4
                 Console.WriteLine("В вашей руке нет ни одной карты");
             }
 
-            PressAnyKeyForContinue();
+            WritePressAnyKeyForContinueMessage();
         }
 
         public void FinishDrawingCards(out bool isWorking)
@@ -155,10 +160,10 @@ namespace oopTask4
         public void WriteWrongInputMessage()
         {
             Console.WriteLine("Введеная неверная команда");
-            PressAnyKeyForContinue();
+            WritePressAnyKeyForContinueMessage();
         }
 
-        public void PressAnyKeyForContinue()
+        public void WritePressAnyKeyForContinueMessage()
         {
             Console.WriteLine("\nНажмите любую клавишу, чтобы продолжить...");
             Console.ReadKey();
