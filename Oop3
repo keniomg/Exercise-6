@@ -74,6 +74,7 @@ namespace oopTask3
             Id = 1234;
             Level = 1;
             Name = "Nameless";
+            IsBanned = false;
         }
 
         public int Id { get; }
@@ -103,7 +104,7 @@ namespace oopTask3
 
         public Database()
         {
-            _players = new List<Player> { new Player(1230, 14, "lox", false), new Player(4321, 22, "sas", false), new Player() };
+            _players = new List<Player> { new Player(1230, 14, "lox", false), new Player(1001, 22, "sas", false), new Player() };
         }
 
         public void ShowInfo()
@@ -186,33 +187,48 @@ namespace oopTask3
             string name;
             string userInput;
 
-            if (TryReadPlayerId(out int id))
+            if (TryGeneratePlayerId(out int id))
             {
-                if (TryGetPlayer(out Player player, id) == false)
+                Console.Clear();
+                Console.WriteLine("Введите уровень игрока\n");
+                userInput = Console.ReadLine();
+
+                if (int.TryParse(userInput, out int level))
                 {
                     Console.Clear();
-                    Console.WriteLine("Введите уровень игрока\n");
-                    userInput = Console.ReadLine();
-
-                    if (int.TryParse(userInput, out int level))
-                    {
-                        Console.Clear();
-                        Console.WriteLine("Введите имя игрока\n");
-                        name = Console.ReadLine();
-                        Console.Clear();
-                        _players.Add(new Player(id, level, name, false));
-                        Console.WriteLine($"Игрок добавлен");
-                        return;
-                    }
-
+                    Console.WriteLine("Введите имя игрока\n");
+                    name = Console.ReadLine();
                     Console.Clear();
-                    Console.WriteLine("Уровень игрока введён неверно");
+                    _players.Add(new Player(id, level, name, false));
+                    Console.WriteLine($"Игрок добавлен");
                     return;
                 }
-                
-                Console.WriteLine("Игрок с таким ID уже есть");
+
+                Console.Clear();
+                Console.WriteLine("Уровень игрока введён неверно");
                 return;
             }
+                
+            Console.WriteLine("Нет свободных id для добавления нового игрока");
+            return;
+        }
+
+        private bool TryGeneratePlayerId(out int id)
+        {
+            id = 0;
+            int minPlayerIdValue = 1000;
+            int maxPlayerIdValue = 10000;
+
+            for (int i = minPlayerIdValue; i < maxPlayerIdValue; i++)
+            {
+                if (TryGetPlayer(out Player player, i) == false)
+                {
+                    id = i;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool TryReadPlayerId(out int id)
