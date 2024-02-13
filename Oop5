@@ -11,6 +11,8 @@ namespace OopTask5
             const string FindBookWithAuthorCommand = "2";
             const string FindBookWithTitleCommand = "3";
             const string ShowAllBooksCommand = "4";
+            const string AddBookCommand = "5";
+            const string RemoveBookCommand = "6";
 
             Library library = new Library();
             bool isWorking = true;
@@ -21,7 +23,9 @@ namespace OopTask5
                     $"\n\n{FindBookWithYearOfIssueCommand} - найти книги по году выпуска" +
                     $"\n\n{FindBookWithAuthorCommand} - найти книги по автору" +
                     $"\n\n{FindBookWithTitleCommand} - найти книги по названию" +
-                    $"\n\n{ShowAllBooksCommand} - показать все книги\n");
+                    $"\n\n{ShowAllBooksCommand} - показать все книги" +
+                    $"\n\n{AddBookCommand} - добавить книгу" +
+                    $"\n\n{RemoveBookCommand} - убрать книгу\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
@@ -41,6 +45,14 @@ namespace OopTask5
 
                     case ShowAllBooksCommand:
                         library.ShowAllBooks();
+                        break;
+
+                    case AddBookCommand:
+                        library.AddBook();
+                        break;
+
+                    case RemoveBookCommand:
+                        library.RemoveBook();
                         break;
 
                     default:
@@ -70,34 +82,29 @@ namespace OopTask5
 
     public class Library
     {
-        private List<Book> _books = new List<Book> {
+        private List<Book> _books;
+
+        public Library()
+        {
+            _books = new List<Book> {
             new Book("Гарри Поттер и философский камень", "Джоан Роулинг", 1488),
             new Book("Гарри Поттер и тайная комната", "Джоан Роулинг", 1489),
             new Book("Гарри Поттер и узник Азкабана", "Джоан Роулинг", 1490),
             new Book("Война и мир", "Толстой Лев Николаевич", 1337),
             new Book("Ни Сы", "Толстой Лев Николаевич", 1234),
-            new Book("Как достать соседа", "Ким Чен Ын", 1488)
-        };
-
-        public void ShowAllBooks()
-        {
-            foreach (Book book in _books)
-            {
-                Console.WriteLine($"{book.Title}, {book.Author}, {book.YearOfIssue}\n\n");
-            }
+            new Book("Как достать соседа", "Ким Чен Ын", 1488) 
+            };
         }
 
         public void FindBookWithAuthor()
         {
             bool isAuthorFound = false;
-            Console.WriteLine("Введите имя автора:\n");
-            string userInput = Console.ReadLine();
-            Console.Clear();
-            Console.WriteLine($"Найдены следующие книги по автору '{userInput}':\n");
+            string bookAuthor = ReadBookAuthor();
+            Console.WriteLine($"Найдены следующие книги по автору '{bookAuthor}':\n");
 
             for (int i = 0; i < _books.Count; i++)
             {
-                if (userInput.ToLower() == _books[i].Author.ToLower())
+                if (bookAuthor.ToLower() == _books[i].Author.ToLower())
                 {
                     Console.WriteLine($"{_books[i].Title}, {_books[i].Author}, {_books[i].YearOfIssue}\n");
                     isAuthorFound = true;
@@ -113,13 +120,11 @@ namespace OopTask5
         public void FindBookWithYearOfIssue()
         {
             bool isYearOfIssueFound = false;
-            Console.WriteLine("Введите год выпуска книги:\n");
-            string userInput = Console.ReadLine();
-            Console.Clear();
-            Console.WriteLine($"Найдены следующие книги по году выпуска '{userInput}':\n");
 
-            if (int.TryParse(userInput, out int yearOfIssue))
+            if (TryReadBookYearOfIssue(out int yearOfIssue))
             {
+                Console.WriteLine($"Найдены следующие книги по году выпуска '{yearOfIssue}':\n");
+
                 for (int i = 0; i < _books.Count; i++)
                 {
                     if (yearOfIssue == _books[i].YearOfIssue)
@@ -128,10 +133,6 @@ namespace OopTask5
                         isYearOfIssueFound = true;
                     }
                 }
-            }
-            else
-            {
-                Console.WriteLine("Год выпуска введён некорректно\n");
             }
 
             if (isYearOfIssueFound == false)
@@ -143,14 +144,12 @@ namespace OopTask5
         public void FindBookWithTitle()
         {
             bool isTitleFound = false;
-            Console.WriteLine("Введите название книги:\n");
-            string userInput = Console.ReadLine();
-            Console.Clear();
-            Console.WriteLine($"Найдены следующие книги по названию книги '{userInput}':\n");
+            string bookTitle = ReadBookTitle();
+            Console.WriteLine($"Найдены следующие книги по названию книги '{bookTitle}':\n");
 
             for (int i = 0; i < _books.Count; i++)
             {
-                if (userInput.ToLower() == _books[i].Title.ToLower())
+                if (bookTitle.ToLower() == _books[i].Title.ToLower())
                 {
                     Console.WriteLine($"{_books[i].Title}, {_books[i].Author}, {_books[i].YearOfIssue}\n");
                     isTitleFound = true;
@@ -161,6 +160,74 @@ namespace OopTask5
             {
                 Console.WriteLine("По вашему запросу ничего не найдено\n");
             }
+        }
+
+        public void ShowAllBooks()
+        {
+            foreach (Book book in _books)
+            {
+                Console.WriteLine($"{book.Title}, {book.Author}, {book.YearOfIssue}\n\n");
+            }
+        }
+
+        public bool TryReadBookYearOfIssue(out int bookYearOfIssue)
+        {
+            bool isReadBookYearOfIssueSuccessfull = true;
+            Console.WriteLine("Введите год выпуска книги:\n");
+            string userInput = Console.ReadLine();
+            Console.Clear();
+
+            if (int.TryParse(userInput, out bookYearOfIssue) == false)
+            {
+                isReadBookYearOfIssueSuccessfull = false;
+                Console.WriteLine("Год выпуска введён некорректно\n");
+            }
+
+            return isReadBookYearOfIssueSuccessfull;
+        }
+
+        public string ReadBookTitle()
+        {
+            Console.WriteLine("Введите название книги:\n");
+            string bookTitle = Console.ReadLine();
+            Console.Clear();
+            return bookTitle;
+        }
+
+        public string ReadBookAuthor()
+        {
+            Console.WriteLine("Введите имя автора:\n");
+            string bookAuthor = Console.ReadLine();
+            Console.Clear();
+            return bookAuthor;
+        }
+
+        public void AddBook()
+        {
+            if (TryReadBookYearOfIssue(out int yearOfIssue))
+            {
+                _books.Add(new Book(ReadBookTitle(), ReadBookAuthor(), yearOfIssue));
+                Console.WriteLine("Книга добавлена\n");
+            }
+        }
+
+        public void RemoveBook()
+        {
+            string bookTitle = ReadBookTitle();
+            string bookAuthor = ReadBookAuthor();
+            TryReadBookYearOfIssue(out int yearOfIssue);
+
+            for (int i = 0; i < _books.Count; i++)
+            {
+                if (_books[i].Title.ToLower() == bookTitle.ToLower() && _books[i].Author.ToLower() == bookAuthor.ToLower() && _books[i].YearOfIssue == yearOfIssue)
+                {
+                    _books.Remove(_books[i]);
+                    Console.WriteLine("Книга удалена\n");
+                    return;
+                }
+            }
+
+            Console.WriteLine("Такая книга не найдена\n");
         }
 
         public void WritePressAnyKeyForContinueMessage()
