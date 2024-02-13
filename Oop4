@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace oopTask4
 {
@@ -16,6 +17,7 @@ namespace oopTask4
             Deck cardList = new Deck();
             Player player = new Player();
             bool isWorking = true;
+            cardList.Form();
 
             while (isWorking)
             {
@@ -55,7 +57,9 @@ namespace oopTask4
                         break;
 
                 }
-                
+
+                Console.WriteLine("\nНажмите любую клавишу, чтобы продолжить...");
+                Console.ReadKey();
                 Console.Clear();
             }
         }
@@ -75,28 +79,40 @@ namespace oopTask4
 
     public class Deck
     {
-        Random random = new Random();
+        private Random _random = new Random();
+        private List<Card> _cards = new List<Card>();
+        private string[] _suits;
+        private string[] _values;
 
-        private List<Card> _cards = new List<Card> { new Card("Черви", "6"), new Card("Черви", "7"), new Card("Черви", "8"), new Card("Черви", "9"), 
-            new Card("Черви", "10"), new Card("Черви", "Валет"), new Card("Черви", "Дама"), new Card("Черви", "Король"), new Card("Черви", "Туз"), new Card("Буби", "6"), 
-            new Card("Буби", "7"), new Card("Буби", "8"), new Card("Буби", "9"), new Card("Буби", "10"), new Card("Буби", "Валет"), new Card("Буби", "Дама"), 
-            new Card("Буби", "Король"), new Card("Буби", "Туз"), new Card("Крести", "6"), new Card("Крести", "7"), new Card("Крести", "8"), new Card("Крести", "9"), 
-            new Card("Крести", "10"), new Card("Крести", "Валет"), new Card("Крести", "Дама"), new Card("Крести", "Король"), new Card("Крести", "Туз"), 
-            new Card("Пики", "6"), new Card("Пики", "7"), new Card("Пики", "8"), new Card("Пики", "9"), new Card("Пики", "10"), new Card("Пики", "Валет"), 
-            new Card("Пики", "Дама"), new Card("Пики", "Король"), new Card("Пики", "Туз") };
+        public Deck()
+        {
+            _suits = new string[]{ "Черви", "Буби", "Крести", "Пики"};
+            _values = new string[]{ "6", "7", "8", "9", "10", "В", "Д", "К", "Т" };
+        }
+
+        public void Form()
+        {
+            _cards.Clear();
+
+            for (int i = 0; i < _suits.Length; i++)
+            {
+                for (int j = 0; j < _values.Length; j++)
+                {
+                    _cards.Add(new Card($"{_suits[i]}", $"{_values[j]}"));
+                }
+            }
+        }
 
         public void ShowCards(Player player)
         {
             for (int i = 0; i < _cards.Count; i++)
                 Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
-
-            player.WritePressAnyKeyForContinueMessage();
         }
 
         public Card GiveCard()
         {
-            int randomCardIndex = random.Next(0, _cards.Count);
-            Card takenCard = _cards[randomCardIndex];
+            int lastCardIndex = _cards.Count - 1;
+            Card takenCard = _cards[lastCardIndex];
             _cards.Remove(takenCard);
             return takenCard;
         }
@@ -105,12 +121,11 @@ namespace oopTask4
         {
             for (int i = _cards.Count - 1; i >= 1; i--)
             {
-                int j = random.Next(i + 1);
-                (_cards[i], _cards[j]) = (_cards[j], _cards[i]);
+                int mixedCardIndex = _random.Next(_cards.Count);
+                (_cards[i], _cards[mixedCardIndex]) = (_cards[mixedCardIndex], _cards[i]);
             }
 
             Console.WriteLine("Карты перемешаны");
-            player.WritePressAnyKeyForContinueMessage();
         }
     }
 
@@ -131,8 +146,6 @@ namespace oopTask4
             {
                 Console.WriteLine("В вашей руке уже достаточно карт.");
             }
-
-            WritePressAnyKeyForContinueMessage();
         }
 
         public void ShowCardsInHand()
@@ -146,8 +159,6 @@ namespace oopTask4
             {
                 Console.WriteLine("В вашей руке нет ни одной карты");
             }
-
-            WritePressAnyKeyForContinueMessage();
         }
 
         public void FinishDrawingCards(out bool isWorking)
@@ -160,13 +171,6 @@ namespace oopTask4
         public void WriteWrongInputMessage()
         {
             Console.WriteLine("Введеная неверная команда");
-            WritePressAnyKeyForContinueMessage();
-        }
-
-        public void WritePressAnyKeyForContinueMessage()
-        {
-            Console.WriteLine("\nНажмите любую клавишу, чтобы продолжить...");
-            Console.ReadKey();
         }
     }
 }
