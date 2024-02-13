@@ -15,9 +15,9 @@ namespace oopTask4
             const string ShowCardsInDeckCommand = "5";
 
             Deck cardList = new Deck();
+            cardList.Form();
             Player player = new Player();
             bool isWorking = true;
-            cardList.Form();
 
             while (isWorking)
             {
@@ -55,7 +55,6 @@ namespace oopTask4
                     default:
                         player.WriteWrongInputMessage();
                         break;
-
                 }
 
                 Console.WriteLine("\nНажмите любую клавишу, чтобы продолжить...");
