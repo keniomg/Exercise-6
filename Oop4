@@ -8,6 +8,15 @@ namespace oopTask4
     {
         static void Main(string[] args)
         {
+            Game game = new Game();
+            game.Play();
+        }
+    }
+
+    public class Game
+    {
+        public void Play()
+        {
             const string TakeCardFromDeckCommand = "1";
             const string ShowCardsInHandCommand = "2";
             const string FinishDrawingCardsCommand = "3";
@@ -29,7 +38,7 @@ namespace oopTask4
                     $"{ShowCardsInDeckCommand} - показать карты в колоде\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
-                
+
                 switch (userInput)
                 {
                     case TakeCardFromDeckCommand:
@@ -49,11 +58,11 @@ namespace oopTask4
                         break;
 
                     case ShowCardsInDeckCommand:
-                        cardList.ShowCards(player);
+                        cardList.ShowCards();
                         break;
 
                     default:
-                        player.WriteWrongInputMessage();
+                        cardList.WriteWrongInputMessage();
                         break;
                 }
 
@@ -102,7 +111,7 @@ namespace oopTask4
             }
         }
 
-        public void ShowCards(Player player)
+        public void ShowCards()
         {
             for (int i = 0; i < _cards.Count; i++)
                 Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
@@ -125,6 +134,11 @@ namespace oopTask4
             }
 
             Console.WriteLine("Карты перемешаны");
+        }
+
+        public void WriteWrongInputMessage()
+        {
+            Console.WriteLine("Введеная неверная команда");
         }
     }
 
@@ -165,11 +179,6 @@ namespace oopTask4
             Console.WriteLine("Вы закончили набор карт. В вашей руке следующие карты:\n");
             ShowCardsInHand();
             isWorking = false;
-        }
-
-        public void WriteWrongInputMessage()
-        {
-            Console.WriteLine("Введеная неверная команда");
         }
     }
 }
