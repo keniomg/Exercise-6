@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace oopTask4
 {
@@ -15,6 +14,10 @@ namespace oopTask4
 
     public class Game
     {
+        private Player _player = new Player();
+        private Deck _cardList = new Deck();
+        private bool isWorking = true;
+
         public void Play()
         {
             const string TakeCardFromDeckCommand = "1";
@@ -23,10 +26,7 @@ namespace oopTask4
             const string MixCardsInDeckCommand = "4";
             const string ShowCardsInDeckCommand = "5";
 
-            Deck cardList = new Deck();
-            cardList.Form();
-            Player player = new Player();
-            bool isWorking = true;
+            _cardList.Form();
 
             while (isWorking)
             {
@@ -42,27 +42,27 @@ namespace oopTask4
                 switch (userInput)
                 {
                     case TakeCardFromDeckCommand:
-                        player.TakeCard(cardList.GiveCard());
+                        _player.TakeCard(_cardList.GiveCard());
                         break;
 
                     case ShowCardsInHandCommand:
-                        player.ShowCardsInHand();
+                        _player.ShowCardsInHand();
                         break;
 
                     case FinishDrawingCardsCommand:
-                        player.FinishDrawingCards(out isWorking);
+                        FinishDrawingCards(out isWorking);
                         break;
 
                     case MixCardsInDeckCommand:
-                        cardList.MixCards(player);
+                        _cardList.MixCards();
                         break;
 
                     case ShowCardsInDeckCommand:
-                        cardList.ShowCards();
+                        _cardList.ShowCards();
                         break;
 
                     default:
-                        cardList.WriteWrongInputMessage();
+                        _cardList.WriteWrongInputMessage();
                         break;
                 }
 
@@ -70,6 +70,13 @@ namespace oopTask4
                 Console.ReadKey();
                 Console.Clear();
             }
+        }
+
+        public void FinishDrawingCards(out bool isWorking)
+        {
+            Console.WriteLine("Вы закончили набор карт. В вашей руке следующие карты:\n");
+            _player.ShowCardsInHand();
+            isWorking = false;
         }
     }
 
@@ -125,7 +132,7 @@ namespace oopTask4
             return takenCard;
         }
 
-        public void MixCards(Player player)
+        public void MixCards()
         {
             for (int i = _cards.Count - 1; i >= 1; i--)
             {
@@ -172,13 +179,6 @@ namespace oopTask4
             {
                 Console.WriteLine("В вашей руке нет ни одной карты");
             }
-        }
-
-        public void FinishDrawingCards(out bool isWorking)
-        {
-            Console.WriteLine("Вы закончили набор карт. В вашей руке следующие карты:\n");
-            ShowCardsInHand();
-            isWorking = false;
         }
     }
 }
