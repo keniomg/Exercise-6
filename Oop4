@@ -91,17 +91,11 @@ namespace oopTask4
     {
         private Random _random = new Random();
         private List<Card> _cards = new List<Card>();
-        private string[] _suits;
-        private string[] _values;
-
-        public Deck()
-        {
-            _suits = new string[] { "Черви", "Буби", "Крести", "Пики"};
-            _values = new string[] { "6", "7", "8", "9", "10", "В", "Д", "К", "Т" };
-        }
 
         public void Form()
         {
+            string[] _suits = new string[] { "Черви", "Буби", "Крести", "Пики" }; ;
+            string[] _values = new string[] { "6", "7", "8", "9", "10", "В", "Д", "К", "Т" }; ;
             _cards.Clear();
 
             for (int i = 0; i < _suits.Length; i++)
