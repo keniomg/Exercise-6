@@ -23,10 +23,10 @@ namespace oopTask4
             const string TakeCardFromDeckCommand = "1";
             const string ShowCardsInHandCommand = "2";
             const string FinishDrawingCardsCommand = "3";
-            const string MixCardsInDeckCommand = "4";
-            const string ShowCardsInDeckCommand = "5";
+            const string ShowCardsInDeckCommand = "4";
 
             _cardList.Form();
+            _cardList.MixCards();
 
             while (isWorking)
             {
@@ -34,7 +34,6 @@ namespace oopTask4
                     $"{TakeCardFromDeckCommand} - взять карту из колоды\n" +
                     $"{ShowCardsInHandCommand} - показать карты в вашей руке\n" +
                     $"{FinishDrawingCardsCommand} - закончить набор карт\n" +
-                    $"{MixCardsInDeckCommand} - перемешать карты в колоде\n" +
                     $"{ShowCardsInDeckCommand} - показать карты в колоде\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
@@ -51,10 +50,6 @@ namespace oopTask4
 
                     case FinishDrawingCardsCommand:
                         FinishDrawingCards(out isWorking);
-                        break;
-
-                    case MixCardsInDeckCommand:
-                        _cardList.MixCards();
                         break;
 
                     case ShowCardsInDeckCommand:
@@ -101,8 +96,8 @@ namespace oopTask4
 
         public Deck()
         {
-            _suits = new string[]{ "Черви", "Буби", "Крести", "Пики"};
-            _values = new string[]{ "6", "7", "8", "9", "10", "В", "Д", "К", "Т" };
+            _suits = new string[] { "Черви", "Буби", "Крести", "Пики"};
+            _values = new string[] { "6", "7", "8", "9", "10", "В", "Д", "К", "Т" };
         }
 
         public void Form()
@@ -120,12 +115,25 @@ namespace oopTask4
 
         public void ShowCards()
         {
-            for (int i = 0; i < _cards.Count; i++)
-                Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
+            if (_cards.Count == 0)
+            {
+                Console.WriteLine("В колоде нет ни одной карты\n");
+            }
+            else
+            {
+                for (int i = 0; i < _cards.Count; i++)
+                    Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
+            }
         }
 
         public Card GiveCard()
         {
+            if (_cards.Count == 0)
+            {
+                Console.WriteLine("В колоде нет ни одной карты\n");
+                return null;
+            }
+
             int lastCardIndex = _cards.Count - 1;
             Card takenCard = _cards[lastCardIndex];
             _cards.Remove(takenCard);
@@ -157,14 +165,21 @@ namespace oopTask4
         {
             int maxCardsInHandCount = 3;
 
-            if (_cardsInHand.Count < maxCardsInHandCount)
+            if (card == null)
             {
-                _cardsInHand.Add(card);
-                Console.WriteLine($"Вы взяли из колоды карту, теперь в вашей руке карт: {_cardsInHand.Count}.");
+                Console.WriteLine("Не удалось взять карту");
             }
             else
             {
-                Console.WriteLine("В вашей руке уже достаточно карт.");
+                if (_cardsInHand.Count >= maxCardsInHandCount)
+                {
+                    Console.WriteLine("В вашей руке уже достаточно карт.");
+                }
+                else
+                {
+                    _cardsInHand.Add(card);
+                    Console.WriteLine($"Вы взяли из колоды карту, теперь в вашей руке карт: {_cardsInHand.Count}.");
+                }
             }
         }
 
