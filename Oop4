@@ -16,7 +16,6 @@ namespace oopTask4
     {
         private Player _player = new Player();
         private Deck _cardList = new Deck();
-        private bool isWorking = true;
 
         public void Play()
         {
@@ -25,6 +24,7 @@ namespace oopTask4
             const string FinishDrawingCardsCommand = "3";
             const string ShowCardsInDeckCommand = "4";
 
+            bool isWorking = true;
             _cardList.Form();
             _cardList.MixCards();
 
@@ -49,7 +49,7 @@ namespace oopTask4
                         break;
 
                     case FinishDrawingCardsCommand:
-                        FinishDrawingCards(out isWorking);
+                        isWorking = FinishDrawingCards();
                         break;
 
                     case ShowCardsInDeckCommand:
@@ -67,11 +67,11 @@ namespace oopTask4
             }
         }
 
-        public void FinishDrawingCards(out bool isWorking)
+        private bool FinishDrawingCards()
         {
             Console.WriteLine("Вы закончили набор карт. В вашей руке следующие карты:\n");
             _player.ShowCardsInHand();
-            isWorking = false;
+            return false;
         }
     }
 
@@ -79,12 +79,12 @@ namespace oopTask4
     {
         public Card(string suit, string value)
         {
-            Suit = suit;
-            Value = value;
+            this.suit = suit;
+            this.value = value;
         }
 
-        public string Suit { get; private set; }
-        public string Value { get; private set; }
+        public string suit { get; private set; }
+        public string value { get; private set; }
     }
 
     public class Deck
@@ -116,7 +116,7 @@ namespace oopTask4
             else
             {
                 for (int i = 0; i < _cards.Count; i++)
-                    Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
+                    Console.WriteLine($"{_cards[i].suit}, {_cards[i].value}\n");
             }
         }
 
@@ -182,7 +182,7 @@ namespace oopTask4
             if (_cardsInHand.Count > 0)
             {
                 for (int i = 0; i < _cardsInHand.Count; i++)
-                    Console.WriteLine($"{_cardsInHand[i].Suit}, {_cardsInHand[i].Value}\n");
+                    Console.WriteLine($"{_cardsInHand[i].suit}, {_cardsInHand[i].value}\n");
             }
             else
             {
