@@ -41,7 +41,7 @@ namespace oopTask4
                 switch (userInput)
                 {
                     case TakeCardFromDeckCommand:
-                        _player.TakeCard(_cardList.GiveCard());
+                        _player.TakeCard(_cardList.TryGiveCard(out Card takenCard), takenCard);
                         break;
 
                     case ShowCardsInHandCommand:
@@ -79,12 +79,12 @@ namespace oopTask4
     {
         public Card(string suit, string value)
         {
-            this.suit = suit;
-            this.value = value;
+            Suit = suit;
+            Value = value;
         }
 
-        public string suit { get; private set; }
-        public string value { get; private set; }
+        public string Suit { get; private set; }
+        public string Value { get; private set; }
     }
 
     public class Deck
@@ -116,22 +116,37 @@ namespace oopTask4
             else
             {
                 for (int i = 0; i < _cards.Count; i++)
-                    Console.WriteLine($"{_cards[i].suit}, {_cards[i].value}\n");
+                    Console.WriteLine($"{_cards[i].Suit}, {_cards[i].Value}\n");
             }
         }
 
-        public Card GiveCard()
+        public bool TryGiveCard(out Card takenCard)
+        {
+            takenCard  = null;
+
+            if (_cards.Count == 0)
+            {
+                Console.WriteLine("В колоде нет ни одной карты\n");
+                return false;
+            }
+
+            int lastCardIndex = _cards.Count - 1;
+            takenCard = _cards[lastCardIndex];
+            _cards.Remove(takenCard);
+            return true;
+        }
+
+        public void Test()
         {
             if (_cards.Count == 0)
             {
                 Console.WriteLine("В колоде нет ни одной карты\n");
-                return null;
+                return;
             }
-
-            int lastCardIndex = _cards.Count - 1;
-            Card takenCard = _cards[lastCardIndex];
-            _cards.Remove(takenCard);
-            return takenCard;
+            else
+            {
+                
+            }
         }
 
         public void MixCards()
@@ -155,11 +170,11 @@ namespace oopTask4
     {
         private List<Card> _cardsInHand = new List<Card>();
 
-        public void TakeCard(Card card)
+        public void TakeCard(bool isCardGiven, Card card)
         {
             int maxCardsInHandCount = 3;
 
-            if (card == null)
+            if (isCardGiven == false)
             {
                 Console.WriteLine("Не удалось взять карту");
             }
@@ -182,7 +197,7 @@ namespace oopTask4
             if (_cardsInHand.Count > 0)
             {
                 for (int i = 0; i < _cardsInHand.Count; i++)
-                    Console.WriteLine($"{_cardsInHand[i].suit}, {_cardsInHand[i].value}\n");
+                    Console.WriteLine($"{_cardsInHand[i].Suit}, {_cardsInHand[i].Value}\n");
             }
             else
             {
