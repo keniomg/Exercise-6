@@ -11,13 +11,13 @@ namespace oopTask6
             const string BuyProductCommand = "2";
             const string ShowInventoryCommand = "3";
 
-            Seller seller = new Seller();
+            Seller seller = new Seller(1000000);
             Buyer buyer = new Buyer(100000);
             bool isContinue = true;
 
             while (isContinue)
             {
-                Console.WriteLine($"Ваши средства - {buyer.BuyersMoney} \n\nВы можете выполнить одну из следующих операций:" +
+                Console.WriteLine($"Ваши средства - {buyer.Money} \n\nВы можете выполнить одну из следующих операций:" +
                     $"\n\n{ShowProductsCommand} - показать товары в магазине" +
                     $"\n\n{BuyProductCommand} - купить товар" +
                     $"\n\n{ShowInventoryCommand} - посмотреть содержимое инвентаря\n");
@@ -35,7 +35,7 @@ namespace oopTask6
                         break;
 
                     case ShowInventoryCommand:
-                        buyer.ShowInventory();
+                        buyer.ShowProducts();
                         break;
 
                     default:
@@ -50,13 +50,31 @@ namespace oopTask6
         }
     }
 
-    public class Seller
+    public class TransactionParticipant
     {
-        private List<Product> _products;
+        public List<Product> Products;
+        public int Money;
 
-        public Seller()
+        public TransactionParticipant(int money)
         {
-            _products = new List<Product>
+            Products = new List<Product>();
+            Money = money;
+        }
+
+        public virtual void ShowProducts()
+        {
+            for (int i = 0; i < Products.Count; i++)
+            {
+                Products[i].ShowInfo();
+            }
+        }
+    }
+
+    public class Seller : TransactionParticipant
+    {
+        public Seller(int money) : base(money)
+        {
+            Products = new List<Product>
             {
                 new Product("Картофель", 1500),
                 new Product("Хлеб", 100),
@@ -64,23 +82,25 @@ namespace oopTask6
                 new Product("Алмазный меч", 15000),
                 new Product("Ухо вепря", 10)
             };
-            SellersMoney = 1000000;
+            Money = money;
         }
 
-        public int SellersMoney { get; private set; }
-
-        public void ShowProducts()
+        public override void ShowProducts()
         {
-            for (int i = 0; i < _products.Count; i++)
+            if (Products.Count == 0)
             {
-                _products[i].ShowProductInfo();
+                Console.WriteLine("Инвентарь торговца пуст");
+            }
+            else
+            {
+                base.ShowProducts();
             }
         }
 
         public void SellProduct(Product product)
         {
-            _products.Remove(product);
-            IncreaseSellersMoney(product.CostOfProduct);
+            Products.Remove(product);
+            IncreaseMoney(product.Cost);
         }
 
         public bool TryFindProductInAssortment(out Product product)
@@ -89,12 +109,12 @@ namespace oopTask6
             string userInput = Console.ReadLine();
             product = null;
 
-            for (int i = 0; i < _products.Count; i++)
+            for (int i = 0; i < Products.Count; i++)
             {
-                if (userInput.ToLower() == _products[i].NameOfProduct.ToLower())
+                if (userInput.ToLower() == Products[i].Name.ToLower())
                 {
-                    product = _products[i];
-                    _products.Remove(product);
+                    product = Products[i];
+                    Products.Remove(product);
                     return true;
                 }
             }
@@ -102,36 +122,29 @@ namespace oopTask6
             return false;
         }
 
-        private void IncreaseSellersMoney(int moneyForSellingProduct)
+        private void IncreaseMoney(int moneyForSellingProduct)
         {
-            SellersMoney += moneyForSellingProduct;
+            Money += moneyForSellingProduct;
         }
     }
 
-    public class Buyer
+    public class Buyer : TransactionParticipant
     {
-        private List<Product> _productsInInventory;
-
-        public Buyer(int buyersMoney)
+        public Buyer(int money) : base(money)
         {
-            _productsInInventory = new List<Product>();
-            BuyersMoney = buyersMoney;
+            Products = new List<Product>();
+            Money = money;
         }
 
-        public int BuyersMoney {  get; private set; }
-
-        public void ShowInventory()
+        public override void ShowProducts()
         {
-            if (_productsInInventory.Count == 0)
+            if (Products.Count == 0)
             {
                 Console.WriteLine("Ваш инвентарь пуст");
             }
             else
             {
-                for (int i = 0; i < _productsInInventory.Count; i++)
-                {
-                    _productsInInventory[i].ShowProductInfo();
-                }
+                base.ShowProducts();
             }
         }
 
@@ -141,38 +154,38 @@ namespace oopTask6
             {
                 Console.WriteLine("\nНе удалось найти товар с таким названием");
             }
-            else if (BuyersMoney < product.CostOfProduct)
+            else if (Money < product.Cost)
             {
                 Console.WriteLine("\nУ вас недостаточно средств для покупки");
             }
             else
             {
-                _productsInInventory.Add(product);
-                DecreaseBuyersMoney(product.CostOfProduct);
+                Products.Add(product);
+                DecreaseMoney(product.Cost);
                 Console.WriteLine("\nПокупка совершена");
             }
         }
 
-        private void DecreaseBuyersMoney(int moneyForByingProduct)
+        private void DecreaseMoney(int moneyForByingProduct)
         {
-            BuyersMoney -= moneyForByingProduct;
+            Money -= moneyForByingProduct;
         }
     }
 
     public class Product
     {
-        public Product(string nameOfProduct, int costOfProduct)
+        public Product(string name, int cost)
         {
-            NameOfProduct = nameOfProduct;
-            CostOfProduct = costOfProduct;
+            Name = name;
+            Cost = cost;
         }
 
-        public string NameOfProduct { get; private set; }
-        public int CostOfProduct { get; private set; }
+        public string Name { get; private set; }
+        public int Cost { get; private set; }
 
-        public void ShowProductInfo()
+        public void ShowInfo()
         {
-            Console.WriteLine($"{NameOfProduct}, {CostOfProduct}\n");
+            Console.WriteLine($"{Name}, {Cost}\n");
         }
     }
 }
