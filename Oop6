@@ -1,0 +1,178 @@
+using System;
+using System.Collections.Generic;
+
+namespace oopTask6
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            const string ShowProductsCommand = "1";
+            const string BuyProductCommand = "2";
+            const string ShowInventoryCommand = "3";
+
+            Seller seller = new Seller();
+            Buyer buyer = new Buyer(100000);
+            bool isContinue = true;
+
+            while (isContinue)
+            {
+                Console.WriteLine($"Ваши средства - {buyer.BuyersMoney} \n\nВы можете выполнить одну из следующих операций:" +
+                    $"\n\n{ShowProductsCommand} - показать товары в магазине" +
+                    $"\n\n{BuyProductCommand} - купить товар" +
+                    $"\n\n{ShowInventoryCommand} - посмотреть содержимое инвентаря\n");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case ShowProductsCommand:
+                        seller.ShowProducts();
+                        break; 
+                    
+                    case BuyProductCommand:
+                        buyer.BuyProduct(seller.TryFindProductInAssortment(out Product product), product);
+                        break;
+
+                    case ShowInventoryCommand:
+                        buyer.ShowInventory();
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.WriteLine("\nДля продолжения нажмите любую клавишу...\n");
+                Console.ReadKey();
+                Console.Clear();
+            }
+        }
+    }
+
+    public class Seller
+    {
+        private List<Product> _products;
+
+        public Seller()
+        {
+            _products = new List<Product>
+            {
+                new Product("Картофель", 1500),
+                new Product("Хлеб", 100),
+                new Product("Помидоры", 150),
+                new Product("Алмазный меч", 15000),
+                new Product("Ухо вепря", 10)
+            };
+            SellersMoney = 1000000;
+        }
+
+        public int SellersMoney { get; private set; }
+
+        public void ShowProducts()
+        {
+            for (int i = 0; i < _products.Count; i++)
+            {
+                _products[i].ShowProductInfo();
+            }
+        }
+
+        public void SellProduct(Product product)
+        {
+            _products.Remove(product);
+            IncreaseSellersMoney(product.CostOfProduct);
+        }
+
+        public bool TryFindProductInAssortment(out Product product)
+        {
+            Console.WriteLine("Введите название товара:\n");
+            string userInput = Console.ReadLine();
+            product = null;
+
+            for (int i = 0; i < _products.Count; i++)
+            {
+                if (userInput.ToLower() == _products[i].NameOfProduct.ToLower())
+                {
+                    product = _products[i];
+                    _products.Remove(product);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void IncreaseSellersMoney(int moneyForSellingProduct)
+        {
+            SellersMoney += moneyForSellingProduct;
+        }
+    }
+
+    public class Buyer
+    {
+        private List<Product> _productsInInventory;
+
+        public Buyer(int buyersMoney)
+        {
+            _productsInInventory = new List<Product>();
+            BuyersMoney = buyersMoney;
+        }
+
+        public int BuyersMoney {  get; private set; }
+
+        public void ShowInventory()
+        {
+            if (_productsInInventory.Count == 0)
+            {
+                Console.WriteLine("Ваш инвентарь пуст");
+            }
+            else
+            {
+                for (int i = 0; i < _productsInInventory.Count; i++)
+                {
+                    _productsInInventory[i].ShowProductInfo();
+                }
+            }
+        }
+
+        public void BuyProduct(bool isProductFound, Product product)
+        {
+            if (isProductFound == false)
+            {
+                Console.WriteLine("\nНе удалось найти товар с таким названием");
+            }
+            else if (BuyersMoney < product.CostOfProduct)
+            {
+                Console.WriteLine("\nУ вас недостаточно средств для покупки");
+            }
+            else
+            {
+                _productsInInventory.Add(product);
+                DecreaseBuyersMoney(product.CostOfProduct);
+                Console.WriteLine("\nПокупка совершена");
+            }
+        }
+
+        private void DecreaseBuyersMoney(int moneyForByingProduct)
+        {
+            BuyersMoney -= moneyForByingProduct;
+        }
+    }
+
+    public class Product
+    {
+        public Product(string nameOfProduct, int costOfProduct)
+        {
+            NameOfProduct = nameOfProduct;
+            CostOfProduct = costOfProduct;
+        }
+
+        public string NameOfProduct { get; private set; }
+        public int CostOfProduct { get; private set; }
+
+        public void ShowProductInfo()
+        {
+            Console.WriteLine($"{NameOfProduct}, {CostOfProduct}\n");
+        }
+    }
+}
