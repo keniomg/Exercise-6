@@ -7,6 +7,15 @@ namespace oopTask6
     {
         static void Main(string[] args)
         {
+            Game game = new Game();
+            game.Play();
+        }
+    }
+
+    public class Game
+    {
+        public void Play()
+        {
             const string ShowProductsCommand = "1";
             const string BuyProductCommand = "2";
             const string ShowInventoryCommand = "3";
@@ -17,7 +26,7 @@ namespace oopTask6
 
             while (isContinue)
             {
-                Console.WriteLine($"Ваши средства - {buyer.Money} \n\nВы можете выполнить одну из следующих операций:" +
+                Console.WriteLine($"Ваши средства - {buyer.ShowMoney()} \n\nВы можете выполнить одну из следующих операций:" +
                     $"\n\n{ShowProductsCommand} - показать товары в магазине" +
                     $"\n\n{BuyProductCommand} - купить товар" +
                     $"\n\n{ShowInventoryCommand} - посмотреть содержимое инвентаря\n");
@@ -28,10 +37,10 @@ namespace oopTask6
                 {
                     case ShowProductsCommand:
                         seller.ShowProducts();
-                        break; 
-                    
+                        break;
+
                     case BuyProductCommand:
-                        buyer.BuyProduct(seller.TryFindProductInAssortment(out Product product), product);
+                        buyer.BuyProduct(seller.SellProduct(out bool isProductFounded), isProductFounded);
                         break;
 
                     case ShowInventoryCommand:
@@ -53,13 +62,14 @@ namespace oopTask6
     public class TransactionParticipant
     {
         public List<Product> Products;
-        public int Money;
 
         public TransactionParticipant(int money)
         {
             Products = new List<Product>();
             Money = money;
         }
+
+        protected int Money;
 
         public virtual void ShowProducts()
         {
@@ -85,6 +95,7 @@ namespace oopTask6
             Money = money;
         }
 
+
         public override void ShowProducts()
         {
             if (Products.Count == 0)
@@ -97,24 +108,32 @@ namespace oopTask6
             }
         }
 
-        public void SellProduct(Product product)
-        {
-            Products.Remove(product);
-            IncreaseMoney(product.Cost);
-        }
-
-        public bool TryFindProductInAssortment(out Product product)
+        public Product SellProduct(out bool isProductFounded)
         {
             Console.WriteLine("Введите название товара:\n");
             string userInput = Console.ReadLine();
+            isProductFounded = false;
+
+            if (TryFindProductInAssortment(userInput, out Product foundProduct))
+            {
+                Products.Remove(foundProduct);
+                IncreaseMoney(foundProduct.Cost);
+                isProductFounded = true;
+                return foundProduct;
+            }
+
+            return null;
+        }
+
+        public bool TryFindProductInAssortment(string nameOfProduct, out Product product)
+        {
             product = null;
 
             for (int i = 0; i < Products.Count; i++)
             {
-                if (userInput.ToLower() == Products[i].Name.ToLower())
+                if (nameOfProduct.ToLower() == Products[i].Name.ToLower())
                 {
                     product = Products[i];
-                    Products.Remove(product);
                     return true;
                 }
             }
@@ -148,7 +167,12 @@ namespace oopTask6
             }
         }
 
-        public void BuyProduct(bool isProductFound, Product product)
+        public int ShowMoney()
+        {
+            return Money;
+        }
+
+        public void BuyProduct(Product product, bool isProductFound)
         {
             if (isProductFound == false)
             {
