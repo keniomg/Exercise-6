@@ -27,7 +27,7 @@ namespace oopTask6
 
             while (isContinue)
             {
-                Console.WriteLine($"Ваши средства - {buyer.GetMoneyInfo()} \n\nВы можете выполнить одну из следующих операций:" +
+                Console.WriteLine($"Ваши средства - {buyer.Money} \n\nВы можете выполнить одну из следующих операций:" +
                     $"\n\n{ShowProductsCommand} - показать товары в магазине" +
                     $"\n\n{BuyProductCommand} - купить товар" +
                     $"\n\n{ShowInventoryCommand} - посмотреть содержимое инвентаря\n");
@@ -73,15 +73,15 @@ namespace oopTask6
             }
             else
             {
-                if (buyer.GetMoneyInfo() < product.Cost)
+                if (buyer.Money < product.Cost)
                 {
                     Console.WriteLine("\nУ вас недостаточно средств для покупки");
                 }
                 else
                 {
-                    seller.Products.Remove(product);
+                    seller.RemoveProduct(product);
                     seller.IncreaseMoney(product.Cost);
-                    buyer.Products.Add(product);
+                    buyer.AddProduct(product);
                     buyer.DecreaseMoney(product.Cost);
                     Console.WriteLine("\nПокупка совершена");
                 }
@@ -91,15 +91,14 @@ namespace oopTask6
 
     public class TransactionParticipant
     {
-        public List<Product> Products;
+        protected List<Product> Products;
 
         public TransactionParticipant(int money)
         {
             Products = new List<Product>();
-            Money = money;
         }
 
-        protected int Money;
+        public int Money { get; protected set; }
 
         public virtual void ShowProducts()
         {
@@ -123,6 +122,11 @@ namespace oopTask6
                 new Product("Ухо вепря", 10)
             };
             Money = money;
+        }
+
+        public void RemoveProduct(Product product)
+        {
+            Products.Remove(product);
         }
 
         public override void ShowProducts()
@@ -179,14 +183,14 @@ namespace oopTask6
             }
         }
 
+        public void AddProduct(Product product)
+        {
+            Products.Add(product);
+        }
+
         public void DecreaseMoney(int productCost)
         {
             Money -= productCost;
-        }
-
-        public int GetMoneyInfo()
-        {
-            return Money;
         }
     }
 
