@@ -21,12 +21,13 @@ namespace oopTask6
             const string ShowInventoryCommand = "3";
 
             Seller seller = new Seller(1000000);
-            Buyer buyer = new Buyer(100000);
+            Buyer buyer = new Buyer(10000);
+            Shop shop = new Shop();
             bool isContinue = true;
 
             while (isContinue)
             {
-                Console.WriteLine($"Ваши средства - {buyer.ShowMoney()} \n\nВы можете выполнить одну из следующих операций:" +
+                Console.WriteLine($"Ваши средства - {buyer.GetMoneyInfo()} \n\nВы можете выполнить одну из следующих операций:" +
                     $"\n\n{ShowProductsCommand} - показать товары в магазине" +
                     $"\n\n{BuyProductCommand} - купить товар" +
                     $"\n\n{ShowInventoryCommand} - посмотреть содержимое инвентаря\n");
@@ -40,7 +41,7 @@ namespace oopTask6
                         break;
 
                     case BuyProductCommand:
-                        buyer.BuyProduct(seller.SellProduct(out bool isProductFounded), isProductFounded);
+                        shop.ExecuteTransaction(seller, buyer);
                         break;
 
                     case ShowInventoryCommand:
@@ -55,6 +56,35 @@ namespace oopTask6
                 Console.WriteLine("\nДля продолжения нажмите любую клавишу...\n");
                 Console.ReadKey();
                 Console.Clear();
+            }
+        }
+    }
+
+    public class Shop
+    {
+        public void ExecuteTransaction(Seller seller, Buyer buyer)
+        {
+            Console.WriteLine("Введите название товара:\n");
+            string userInput = Console.ReadLine();
+
+            if (seller.TryFindProductInAssortment(userInput, out Product product) == false)
+            {
+                Console.WriteLine("\nНе удалось найти товар с таким названием");
+            }
+            else
+            {
+                if (buyer.GetMoneyInfo() < product.Cost)
+                {
+                    Console.WriteLine("\nУ вас недостаточно средств для покупки");
+                }
+                else
+                {
+                    seller.Products.Remove(product);
+                    seller.IncreaseMoney(product.Cost);
+                    buyer.Products.Add(product);
+                    buyer.DecreaseMoney(product.Cost);
+                    Console.WriteLine("\nПокупка совершена");
+                }
             }
         }
     }
@@ -95,7 +125,6 @@ namespace oopTask6
             Money = money;
         }
 
-
         public override void ShowProducts()
         {
             if (Products.Count == 0)
@@ -108,21 +137,9 @@ namespace oopTask6
             }
         }
 
-        public Product SellProduct(out bool isProductFounded)
+        public void IncreaseMoney(int productCost)
         {
-            Console.WriteLine("Введите название товара:\n");
-            string userInput = Console.ReadLine();
-            isProductFounded = false;
-
-            if (TryFindProductInAssortment(userInput, out Product foundProduct))
-            {
-                Products.Remove(foundProduct);
-                IncreaseMoney(foundProduct.Cost);
-                isProductFounded = true;
-                return foundProduct;
-            }
-
-            return null;
+            Money += productCost;
         }
 
         public bool TryFindProductInAssortment(string nameOfProduct, out Product product)
@@ -139,11 +156,6 @@ namespace oopTask6
             }
 
             return false;
-        }
-
-        private void IncreaseMoney(int moneyForSellingProduct)
-        {
-            Money += moneyForSellingProduct;
         }
     }
 
@@ -167,32 +179,14 @@ namespace oopTask6
             }
         }
 
-        public int ShowMoney()
+        public void DecreaseMoney(int productCost)
+        {
+            Money -= productCost;
+        }
+
+        public int GetMoneyInfo()
         {
             return Money;
-        }
-
-        public void BuyProduct(Product product, bool isProductFound)
-        {
-            if (isProductFound == false)
-            {
-                Console.WriteLine("\nНе удалось найти товар с таким названием");
-            }
-            else if (Money < product.Cost)
-            {
-                Console.WriteLine("\nУ вас недостаточно средств для покупки");
-            }
-            else
-            {
-                Products.Add(product);
-                DecreaseMoney(product.Cost);
-                Console.WriteLine("\nПокупка совершена");
-            }
-        }
-
-        private void DecreaseMoney(int moneyForByingProduct)
-        {
-            Money -= moneyForByingProduct;
         }
     }
 
