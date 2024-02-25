@@ -31,8 +31,8 @@ namespace oopTask6
                 }
                 else
                 {
-                    seller.SellProduct(product, product.Cost);
-                    buyer.BuyProduct(product, product.Cost);
+                    seller.SellProduct(product);
+                    buyer.BuyProduct(product);
                     Console.WriteLine("\nПокупка совершена");
                 }
             }
@@ -118,10 +118,10 @@ namespace oopTask6
             Money = money;
         }
 
-        public void SellProduct(Product product, int productCost)
+        public void SellProduct(Product product)
         {
             Products.Remove(product);
-            Money += productCost;
+            Money += product.Cost;
         }
 
         public override void ShowProducts()
@@ -185,10 +185,10 @@ namespace oopTask6
             }
         }
 
-        public void BuyProduct(Product product, int productCost)
+        public void BuyProduct(Product product)
         {
             Products.Add(product);
-            Money -= productCost;
+            Money -= product.Cost;
         }
     }
 
