@@ -1,0 +1,275 @@
+using System;
+using System.Collections.Generic;
+
+namespace oopTask7
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            TrainManagementProgram trainManagementProgram = new TrainManagementProgram();
+            trainManagementProgram.Run();
+        }
+    }
+
+    public class TrainManagementProgram
+    {
+        readonly Random random = new Random();
+        
+        public TrainManagementProgram()
+        {
+            Trains = new List<Train>();
+            Destinations = new List<string> 
+            {
+                "Астрахань",
+                "Барнаул",
+                "Москва",
+                "Волгоград",
+                "Иркутск",
+                "Сыктывкар"
+            };
+        }
+
+        public List<string> Destinations { get; private set; }
+        public List<Train> Trains { get; private set; }
+
+        public void Run()
+        {
+            const string AddTrainCommand = "1";
+            const string ShowAllTrainsInfoCommand = "2";
+
+            while (true)
+            {
+                if (Trains.Count <= 5)
+                {
+                    ShowAllTrainsInfo();
+                }
+                else
+                {
+                    Console.WriteLine("Общее количество поездов слишком велико, для отображения на стартовой панели." +
+                        "\nДля просмотра всех текущих рейсов, введите соответствующую команду.\n");
+                    ShowTrainsInfoAtStartPanel();
+                }
+
+                Console.SetCursorPosition(0, 20);
+                Console.WriteLine($"Вы можете выполнить одну из следующих комманд:\n" +
+                    $"\nДобавить новый рейс - {AddTrainCommand}" +
+                    $"\nПоказать информацию о всех текущих рейсах - {ShowAllTrainsInfoCommand}\n");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case AddTrainCommand:
+                        AddTrain();
+                        break;
+
+                    case ShowAllTrainsInfoCommand:
+                        ShowAllTrainsInfo();
+                        break;
+
+                    default:
+                        WriteErrorMessage();
+                        break;
+                }
+
+                Console.WriteLine("\nДля продолжения нажмите любую клавишу...\n");
+                Console.ReadKey();
+                Console.Clear();
+            }
+        }
+
+        private void ShowAvailableDestinations(List<string> destinations)
+        {
+            for (int i = 0; i < destinations.Count; i++)
+            {
+                Console.WriteLine(i + 1 + " " + destinations[i]);
+            }
+        }
+
+        private void ShowAvailableFinalDestinations(string startDestination)
+        {
+            ShowAvailableDestinations(FormFinalDestinationsList(startDestination));
+        }
+
+        private void AddTrain()
+        {
+            string startDestination = SetStartDestination();
+
+            if (startDestination != null)
+            {
+                string finalDestination = SetFinalDestination(startDestination);
+
+                if (finalDestination != null)
+                {
+                    int passengersNumber = GetPassengersNumber();
+                    int carriageCapacity = GetCarriageCapacity();
+                    int carriageNumber = CalculateCarriageNumber(passengersNumber, carriageCapacity);
+                    Train train = new Train(passengersNumber, carriageCapacity, carriageNumber, startDestination, finalDestination);
+                    Trains.Add(train);
+                    train.ShowInfo();
+                }
+                else
+                {
+                    WriteErrorMessage();
+                }
+            }
+            else
+            {
+                WriteErrorMessage();
+            }
+        }
+
+        private void ShowAllTrainsInfo()
+        {
+            if (Trains.Count == 0)
+            {
+                Console.WriteLine("В данный момент нет текущих рейсов.");
+            }
+            foreach (Train train in Trains)
+            {
+                train.ShowInfo();
+                Console.WriteLine();
+            }
+        }
+
+        private void ShowTrainsInfoAtStartPanel()
+        {
+            int maxTrainsInfoAtStartPanelCount = 5;
+
+            for (int i = 0; i < maxTrainsInfoAtStartPanelCount; i++)
+            {
+                Trains[i].ShowInfo();
+                Console.WriteLine();
+            }
+        }
+
+        private void WriteErrorMessage()
+        {
+            Console.WriteLine("Ошибка: Введены неверные данные. Проверьте корректность вводимых данных");
+        }
+
+        private List<string> FormFinalDestinationsList(string startDestination)
+        {
+            List<string> finalDestinations = new List<string>();
+            finalDestinations.Clear();
+
+            for (int i = 0; i < Destinations.Count; i++)
+            {
+                if (Destinations[i] != startDestination)
+                {
+                    finalDestinations.Add(Destinations[i]);
+                }
+            }
+
+            finalDestinations.Remove(startDestination);
+            return finalDestinations;
+        }
+
+        private string SetStartDestination()
+        {
+            Console.WriteLine("Введите номер начального пункта следования поезда:\n");
+            ShowAvailableDestinations(Destinations);
+            Console.WriteLine();
+            string userInterfaceDestinationNumber = Console.ReadLine();
+            Console.Clear();
+
+            if (IsDestinationNumberCorrect(userInterfaceDestinationNumber, out int destinationNumber))
+            {
+                string startDestination = Destinations[destinationNumber];
+                return startDestination;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private string SetFinalDestination(string startDestination)
+        {
+            Console.WriteLine("Введите номер конечного пункта следования поезда:\n");
+            ShowAvailableFinalDestinations(startDestination);
+            Console.WriteLine();
+            string userInterfaceDestinationNumber = Console.ReadLine();
+            Console.Clear();
+
+            if (IsDestinationNumberCorrect(userInterfaceDestinationNumber, out int destinationNumber))
+            {
+                string finalDestination = FormFinalDestinationsList(startDestination)[destinationNumber];
+                return finalDestination;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private bool IsDestinationNumberCorrect(string userInterfaceDestinationNumber, out int programDestinationNumber)
+        {
+            programDestinationNumber = 0;
+
+            if (int.TryParse(userInterfaceDestinationNumber, out int destinationNumber))
+            {
+                programDestinationNumber = --destinationNumber;
+
+                if (destinationNumber > 0 || destinationNumber <= Destinations.Count)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private int CalculateCarriageNumber(int passengersNumber, int carriageCapacity)
+        {
+            int carriageNumber = (int)Math.Ceiling((float)passengersNumber / carriageCapacity);
+            return carriageNumber;
+        }
+
+        private int GetPassengersNumber()
+        {
+            int minimumPassengersNumber = 1;
+            int maximunPassengersNumber = 301;
+            return random.Next(minimumPassengersNumber, maximunPassengersNumber);
+        }
+
+        private int GetCarriageCapacity()
+        {
+            int tenPassengers = 10;
+            int minimumPassengersTensNumber = 3;
+            int maximumPassengersTensNumber = 6;
+            return random.Next(minimumPassengersTensNumber, maximumPassengersTensNumber)*tenPassengers;
+        }
+    }
+
+    public class Train
+    {
+        public Train(int passengersNumber, int carriageCapacity, int carriageNumber, string startDestination, string finalDestination)
+        {
+            PassengersNumber = passengersNumber;
+            CarriageCapacity = carriageCapacity;
+            StartDestination = startDestination;
+            FinalDestination = finalDestination;
+            CarriageNumber = carriageNumber;
+        }
+
+        public string StartDestination { get; private set; }
+        public string FinalDestination { get; private set; }
+        public int PassengersNumber { get; private set; }
+        public int CarriageCapacity { get; private set; }
+        public int CarriageNumber { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"На поезде, следующем из города {StartDestination} в город {FinalDestination}" +
+                $" будет перевезено всего пассажиров {PassengersNumber}.\nДля этого будет использовано всего вагонов {CarriageNumber} с вместимостью мест {CarriageCapacity}.");
+        }
+    }
+}
