@@ -14,12 +14,14 @@ namespace oopTask7
 
     public class TrainManagementProgram
     {
-        readonly Random random = new Random();
+        private List<string> _destinationsList;
+        private List<Train> _trains;
+        private readonly Random _random = new Random();
         
         public TrainManagementProgram()
         {
-            Trains = new List<Train>();
-            Destinations = new List<string> 
+            _trains = new List<Train>();
+            _destinationsList = new List<string> 
             {
                 "Астрахань",
                 "Барнаул",
@@ -30,17 +32,17 @@ namespace oopTask7
             };
         }
 
-        public List<string> Destinations { get; private set; }
-        public List<Train> Trains { get; private set; }
-
         public void Run()
         {
             const string AddTrainCommand = "1";
             const string ShowAllTrainsInfoCommand = "2";
+            const string ExitCommand = "3";
 
-            while (true)
+            bool isContinue = true;
+
+            while (isContinue)
             {
-                if (Trains.Count <= 5)
+                if (_trains.Count <= 5)
                 {
                     ShowAllTrainsInfo();
                 }
@@ -54,7 +56,8 @@ namespace oopTask7
                 Console.SetCursorPosition(0, 20);
                 Console.WriteLine($"Вы можете выполнить одну из следующих комманд:\n" +
                     $"\nДобавить новый рейс - {AddTrainCommand}" +
-                    $"\nПоказать информацию о всех текущих рейсах - {ShowAllTrainsInfoCommand}\n");
+                    $"\nПоказать информацию о всех текущих рейсах - {ShowAllTrainsInfoCommand}" +
+                    $"\nВыйти из программы - {ExitCommand}\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
@@ -68,13 +71,21 @@ namespace oopTask7
                         ShowAllTrainsInfo();
                         break;
 
+                    case ExitCommand:
+                        isContinue = false;
+                        break;
+
                     default:
                         WriteErrorMessage();
                         break;
                 }
 
-                Console.WriteLine("\nДля продолжения нажмите любую клавишу...\n");
-                Console.ReadKey();
+                if (userInput != ExitCommand)
+                {
+                    Console.WriteLine("\nДля продолжения нажмите любую клавишу...\n");
+                    Console.ReadKey();
+                }
+
                 Console.Clear();
             }
         }
@@ -85,11 +96,6 @@ namespace oopTask7
             {
                 Console.WriteLine(i + 1 + " " + destinations[i]);
             }
-        }
-
-        private void ShowAvailableFinalDestinations(string startDestination)
-        {
-            ShowAvailableDestinations(FormFinalDestinationsList(startDestination));
         }
 
         private void AddTrain()
@@ -106,7 +112,7 @@ namespace oopTask7
                     int carriageCapacity = GetCarriageCapacity();
                     int carriageNumber = CalculateCarriageNumber(passengersNumber, carriageCapacity);
                     Train train = new Train(passengersNumber, carriageCapacity, carriageNumber, startDestination, finalDestination);
-                    Trains.Add(train);
+                    _trains.Add(train);
                     train.ShowInfo();
                 }
                 else
@@ -122,11 +128,11 @@ namespace oopTask7
 
         private void ShowAllTrainsInfo()
         {
-            if (Trains.Count == 0)
+            if (_trains.Count == 0)
             {
                 Console.WriteLine("В данный момент нет текущих рейсов.");
             }
-            foreach (Train train in Trains)
+            foreach (Train train in _trains)
             {
                 train.ShowInfo();
                 Console.WriteLine();
@@ -139,7 +145,7 @@ namespace oopTask7
 
             for (int i = 0; i < maxTrainsInfoAtStartPanelCount; i++)
             {
-                Trains[i].ShowInfo();
+                _trains[i].ShowInfo();
                 Console.WriteLine();
             }
         }
@@ -152,31 +158,29 @@ namespace oopTask7
         private List<string> FormFinalDestinationsList(string startDestination)
         {
             List<string> finalDestinations = new List<string>();
-            finalDestinations.Clear();
 
-            for (int i = 0; i < Destinations.Count; i++)
+            for (int i = 0; i < _destinationsList.Count; i++)
             {
-                if (Destinations[i] != startDestination)
+                if (_destinationsList[i] != startDestination)
                 {
-                    finalDestinations.Add(Destinations[i]);
+                    finalDestinations.Add(_destinationsList[i]);
                 }
             }
 
-            finalDestinations.Remove(startDestination);
             return finalDestinations;
         }
 
         private string SetStartDestination()
         {
             Console.WriteLine("Введите номер начального пункта следования поезда:\n");
-            ShowAvailableDestinations(Destinations);
+            ShowAvailableDestinations(_destinationsList);
             Console.WriteLine();
             string userInterfaceDestinationNumber = Console.ReadLine();
             Console.Clear();
 
-            if (IsDestinationNumberCorrect(userInterfaceDestinationNumber, out int destinationNumber))
+            if (IsDestinationNumberCorrect(userInterfaceDestinationNumber, out int destinationNumber, _destinationsList))
             {
-                string startDestination = Destinations[destinationNumber];
+                string startDestination = _destinationsList[destinationNumber];
                 return startDestination;
             }
             else
@@ -187,15 +191,16 @@ namespace oopTask7
 
         private string SetFinalDestination(string startDestination)
         {
+            List<string> finalDestinationsList = FormFinalDestinationsList(startDestination);
             Console.WriteLine("Введите номер конечного пункта следования поезда:\n");
-            ShowAvailableFinalDestinations(startDestination);
+            ShowAvailableDestinations(finalDestinationsList);
             Console.WriteLine();
             string userInterfaceDestinationNumber = Console.ReadLine();
             Console.Clear();
 
-            if (IsDestinationNumberCorrect(userInterfaceDestinationNumber, out int destinationNumber))
+            if (IsDestinationNumberCorrect(userInterfaceDestinationNumber, out int destinationNumber, finalDestinationsList))
             {
-                string finalDestination = FormFinalDestinationsList(startDestination)[destinationNumber];
+                string finalDestination = finalDestinationsList[destinationNumber];
                 return finalDestination;
             }
             else
@@ -204,27 +209,17 @@ namespace oopTask7
             }
         }
 
-        private bool IsDestinationNumberCorrect(string userInterfaceDestinationNumber, out int programDestinationNumber)
+        private bool IsDestinationNumberCorrect(string userInterfaceDestinationNumber, out int programDestinationNumber, List<string> destinationsList)
         {
             programDestinationNumber = 0;
 
-            if (int.TryParse(userInterfaceDestinationNumber, out int destinationNumber))
-            {
-                programDestinationNumber = --destinationNumber;
-
-                if (destinationNumber > 0 || destinationNumber <= Destinations.Count)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
+            if (int.TryParse(userInterfaceDestinationNumber, out int destinationNumber) == false)
             {
                 return false;
             }
+
+            programDestinationNumber = --destinationNumber;
+            return (destinationNumber >= 0 && destinationNumber < destinationsList.Count);
         }
 
         private int CalculateCarriageNumber(int passengersNumber, int carriageCapacity)
@@ -237,7 +232,7 @@ namespace oopTask7
         {
             int minimumPassengersNumber = 1;
             int maximunPassengersNumber = 301;
-            return random.Next(minimumPassengersNumber, maximunPassengersNumber);
+            return _random.Next(minimumPassengersNumber, maximunPassengersNumber);
         }
 
         private int GetCarriageCapacity()
@@ -245,7 +240,7 @@ namespace oopTask7
             int tenPassengers = 10;
             int minimumPassengersTensNumber = 3;
             int maximumPassengersTensNumber = 6;
-            return random.Next(minimumPassengersTensNumber, maximumPassengersTensNumber)*tenPassengers;
+            return _random.Next(minimumPassengersTensNumber, maximumPassengersTensNumber)*tenPassengers;
         }
     }
 
