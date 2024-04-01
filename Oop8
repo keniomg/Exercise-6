@@ -1,0 +1,227 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace oopTask88
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Arena arena = new Arena();
+            DoubleCriticalStrikeGladiator doubleCriticalStrikeGladiator = new DoubleCriticalStrikeGladiator(1500, 60);
+            EvadingGladiator evadingGladiator = new EvadingGladiator(2000, 50);
+            arena.Fight(doubleCriticalStrikeGladiator, evadingGladiator);
+        }
+    }
+
+    public class Arena
+    {
+        public void Fight(Gladiator firstGladiator, Gladiator secondGladiator)
+        {
+            while (firstGladiator.HealthPoint > 0 && secondGladiator.HealthPoint > 0)
+            {
+                firstGladiator.Attack(secondGladiator);
+                secondGladiator.ShowInfo();
+                secondGladiator.Attack(firstGladiator);
+                firstGladiator.ShowInfo();
+                Console.WriteLine("Для следующего хода нажмите любую клавишу...\n");
+                Console.ReadKey();
+                Console.Clear();
+            }
+        }
+
+        public Gladiator ChooseGladiator()
+        {
+            const string Choose
+        }
+
+
+    }
+
+    public class Gladiator
+    {
+        public int HealthPoint { get; protected set; }
+        protected int Damage;
+
+        public Gladiator(int healthPoint, int damage) 
+        {
+            HealthPoint = healthPoint;
+            Damage = damage;
+        }
+
+        public virtual void TakeDamage(int damage)
+        {
+            HealthPoint -= damage;
+            Console.WriteLine($"Гладиатор получает урон - {damage}!");
+
+            if (HealthPoint <= 0)
+            {
+                HealthPoint = 0;
+                Console.WriteLine("Гладиатор погиб!");
+            }
+        }
+        
+        public virtual void Attack(Gladiator enemyGladiator)
+        {
+            enemyGladiator.TakeDamage(Damage);
+        }
+
+        public virtual void ShowInfo()
+        {
+            Console.WriteLine($"Текущее здоровье гладиатора - {HealthPoint}");
+        }
+    }
+
+    public class DoubleCriticalStrikeGladiator : Gladiator
+    {
+        private int _minMultiplierValue;
+        private int _maxMultiplierValue;
+        private Random _random;
+
+        public DoubleCriticalStrikeGladiator(int healthPoint, int damage) : base(healthPoint, damage) 
+        {
+            _minMultiplierValue = 1;
+            _maxMultiplierValue = 3;
+            _random = new Random();
+        }
+
+        public override void Attack(Gladiator enemyGladiator)
+        {
+            int damageMultiplier = _random.Next(_minMultiplierValue, _maxMultiplierValue);
+            int damage = Damage * damageMultiplier;
+
+            if (damageMultiplier == 2)
+            {
+                Console.WriteLine("Гладиатор наносит удвоенный урон!");
+            }
+
+            enemyGladiator.TakeDamage(damage);
+        }
+    }
+
+    public class DoublePunchGladiator : Gladiator
+    {
+        private int _attackNumber;
+        private int _maxAttackNumber;
+
+        public DoublePunchGladiator(int healthPoint, int damage) : base(healthPoint, damage) 
+        {
+            _maxAttackNumber = 3;
+        }
+
+        public override void Attack(Gladiator enemyGladiator)
+        {
+            if (_attackNumber >= _maxAttackNumber)
+            {
+                _attackNumber = 0;
+                enemyGladiator.TakeDamage(Damage);
+                enemyGladiator.TakeDamage(Damage);
+                Console.WriteLine("Гладиатор проводит двойную атаку!");
+            }
+            else
+            {
+                _attackNumber++;
+                enemyGladiator.TakeDamage(Damage);
+            }
+        }
+    }
+
+    public class BerserkGladiator : Gladiator
+    {
+        private int _healthPointHealingValue;
+        private int _ragePointValue;
+        private int _maxRagePointValue;
+
+        public BerserkGladiator(int healthPoint, int damage) : base(healthPoint, damage) 
+        {
+            _ragePointValue = 0;
+            _maxRagePointValue = 300;
+            _healthPointHealingValue = 100;
+        }
+
+        public override void TakeDamage(int damage)
+        {
+            HealthPoint -= damage;
+            Console.WriteLine($"Гладиатор получает урон - {damage}!");
+            _ragePointValue += damage;
+
+            if (_ragePointValue >= _maxRagePointValue)
+            {
+                HealthPoint += _healthPointHealingValue;
+                _ragePointValue -= _maxRagePointValue;
+                Console.WriteLine($"Гладиатор восстанавливает здоровья - {_healthPointHealingValue}!");
+            }
+        }
+
+        public override void ShowInfo()
+        {
+            base.ShowInfo();
+            Console.WriteLine($"Текущая ярость гладиатора - {_ragePointValue}");
+        }
+    }
+
+    public class MageGladiator : Gladiator
+    {
+        private int _fireBallDamageValue;
+        private int _fireBallManaCostValue;
+        private int _manaPoint;
+
+        public MageGladiator(int healthPoint, int damage, int manaPoint) : base(healthPoint, damage) 
+        {
+            _fireBallDamageValue = 150;
+            _fireBallManaCostValue = 100;
+            _manaPoint = manaPoint;
+        }
+
+        public override void Attack(Gladiator enemyGladiator)
+        {
+            if (_manaPoint >= _fireBallManaCostValue)
+            {
+                _manaPoint -= _fireBallManaCostValue;
+                enemyGladiator.TakeDamage(_fireBallDamageValue);
+                Console.WriteLine($"Гладиатор атакует огненным шаром и наносит урон - {_fireBallDamageValue}");
+            }
+            else
+            {
+                base.Attack(enemyGladiator);
+            }
+        }
+    }
+
+    public class EvadingGladiator : Gladiator
+    {
+        private Random _random;
+        private int _evadingChance;
+        private int _maxProbabilityValue;
+        private int _minProbabilityValue;
+
+        public EvadingGladiator(int healthPoint, int damage) : base(healthPoint, damage)
+        {
+            _evadingChance = 25;
+            _minProbabilityValue = 0;
+            _maxProbabilityValue = 101;
+            _random = new Random();
+        }
+
+        private bool TryEvadeAttack()
+        {
+            int takeDamageModifierValue = _random.Next(_minProbabilityValue, _maxProbabilityValue);
+            return (takeDamageModifierValue <= _evadingChance);
+        }
+
+        public override void TakeDamage(int damage)
+        {
+            if (TryEvadeAttack() == false)
+            {
+                base.TakeDamage(damage);
+            }
+            else
+            {
+                Console.WriteLine("Гладиатор уворачивается от атаки и не получает урона!");
+            }
+        }
+    }
+}
