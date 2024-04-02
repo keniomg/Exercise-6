@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace oopTask88
 {
@@ -11,34 +7,162 @@ namespace oopTask88
         static void Main(string[] args)
         {
             Arena arena = new Arena();
-            DoubleCriticalStrikeGladiator doubleCriticalStrikeGladiator = new DoubleCriticalStrikeGladiator(1500, 60);
-            EvadingGladiator evadingGladiator = new EvadingGladiator(2000, 50);
-            arena.Fight(doubleCriticalStrikeGladiator, evadingGladiator);
+            arena.Play();
         }
     }
 
     public class Arena
     {
-        public void Fight(Gladiator firstGladiator, Gladiator secondGladiator)
+        public void Play()
+        {
+            const string ChooseGladiatorsAndFightCommand = "1";
+            const string ExitCommand = "2";
+
+            bool isContinue = true;
+
+            while (isContinue)
+            {
+                Console.Clear();
+                Console.WriteLine($"Вы можете выбрать одну из следующих опций:\n" +
+                    $"\nВыбрать гладиаторов и начать бой - {ChooseGladiatorsAndFightCommand}" +
+                    $"\nВыйти из программы - {ExitCommand}\n");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch ( userInput )
+                {
+                    case ChooseGladiatorsAndFightCommand:
+                        ChooseGladiatorsAndFight();
+                        break;
+
+                    case ExitCommand:
+                        isContinue = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.ReadKey();
+            }
+
+            Console.WriteLine("Вы вышли из программы...");
+        }
+
+        private void ChooseGladiatorsAndFight()
+        {
+            Gladiator firstGladiator = ChooseGladiator();
+
+            if (firstGladiator != null)
+            {
+                Gladiator secondGladiator = ChooseGladiator();
+
+                if (secondGladiator != null)
+                {
+                    Fight(firstGladiator, secondGladiator);
+                }
+                else
+                {
+                    Console.WriteLine("Введена неверная команда");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Введена неверная команда");
+            }
+        }
+
+        private void Fight(Gladiator firstGladiator, Gladiator secondGladiator)
         {
             while (firstGladiator.HealthPoint > 0 && secondGladiator.HealthPoint > 0)
             {
+                Console.WriteLine("Первый гладиатор проводит атаку:\n\n");
                 firstGladiator.Attack(secondGladiator);
                 secondGladiator.ShowInfo();
+                Console.WriteLine();
+                Console.WriteLine("Второй гладиатор проводит атаку:\n\n");
                 secondGladiator.Attack(firstGladiator);
                 firstGladiator.ShowInfo();
+                Console.WriteLine();
                 Console.WriteLine("Для следующего хода нажмите любую клавишу...\n");
                 Console.ReadKey();
                 Console.Clear();
+
+                if (firstGladiator.HealthPoint <= 0 && secondGladiator.HealthPoint > 0)
+                {
+                    Console.WriteLine("Победил второй гладиатор!");
+                    Console.ReadKey();
+                }
+                else if (firstGladiator.HealthPoint > 0 && secondGladiator.HealthPoint <= 0)
+                {
+                    Console.WriteLine("Победил первый гладиатор!");
+                    Console.ReadKey();
+                }
+                else if (firstGladiator.HealthPoint <=0 && secondGladiator.HealthPoint <= 0)
+                {
+                    Console.WriteLine("Оба гладиатора погибли, ничья!");
+                    Console.ReadKey();
+                }
             }
         }
 
         public Gladiator ChooseGladiator()
         {
-            const string Choose
+            const string ChooseDoubleCriticalStrikeGladiatorCommand = "1";
+            const string ChooseDoublePunchGladiatorCommand = "2";
+            const string ChooseBerserkGladiatorCommand = "3";
+            const string ChooseMageGladiatorCommand = "4";
+            const string ChooseEvadingGladiatorCommand = "5";
+
+            Console.Clear();
+            Console.WriteLine($"Вы можете выбрать гладиатора одного из следующих типов:\n" +
+                $"\n{ChooseDoubleCriticalStrikeGladiatorCommand} - Гладиатор с вероятностью двойного урона" +
+                $"\n{ChooseDoublePunchGladiatorCommand} - Гладиатор с двойным ударом на каждую третью атаку" +
+                $"\n{ChooseBerserkGladiatorCommand} - Гладиатор берсерк" +
+                $"\n{ChooseMageGladiatorCommand} - Гладиатор маг" +
+                $"\n{ChooseEvadingGladiatorCommand} - Уворачивающийся гладиатор");
+            Console.WriteLine();
+            string userInput = Console.ReadLine();
+            Gladiator gladiator = null;
+            Console.Clear();
+
+            switch ( userInput )
+            {
+                case ChooseDoubleCriticalStrikeGladiatorCommand:
+                    gladiator = new DoubleCriticalStrikeGladiator(2000, 60);
+                    Console.WriteLine("Выбран гладиатор с вероятностью двойного урона");
+                    break;
+
+                case ChooseDoublePunchGladiatorCommand:
+                    gladiator = new DoublePunchGladiator(1800, 75);
+                    Console.WriteLine("Выбран гладиатор с двойным ударом на каждую третью атаку");
+                    break;
+
+                case ChooseBerserkGladiatorCommand:
+                    gladiator = new BerserkGladiator(1500, 50);
+                    Console.WriteLine("Выбран гладиатор берсерк");
+                    break;
+
+                case ChooseMageGladiatorCommand:
+                    gladiator = new MageGladiator(2000, 40, 800);
+                    Console.WriteLine("Выбран гладиатор маг");
+                    break;
+
+                case ChooseEvadingGladiatorCommand:
+                    gladiator = new EvadingGladiator(2100, 65);
+                    Console.WriteLine("Выбран уворачивающийся гладиатор");
+                    break;
+
+                default:
+                    Console.WriteLine("Введена неверная команда");
+                    break;
+            }
+
+            Console.ReadKey();
+            Console.Clear();
+            return gladiator;
         }
-
-
     }
 
     public class Gladiator
@@ -55,12 +179,12 @@ namespace oopTask88
         public virtual void TakeDamage(int damage)
         {
             HealthPoint -= damage;
-            Console.WriteLine($"Гладиатор получает урон - {damage}!");
+            Console.WriteLine($"Противник получает урон - {damage}!\n");
 
             if (HealthPoint <= 0)
             {
                 HealthPoint = 0;
-                Console.WriteLine("Гладиатор погиб!");
+                Console.WriteLine("Противник погиб!\n");
             }
         }
         
@@ -71,7 +195,7 @@ namespace oopTask88
 
         public virtual void ShowInfo()
         {
-            Console.WriteLine($"Текущее здоровье гладиатора - {HealthPoint}");
+            Console.WriteLine($"Текущее здоровье противника - {HealthPoint}\n");
         }
     }
 
@@ -95,7 +219,7 @@ namespace oopTask88
 
             if (damageMultiplier == 2)
             {
-                Console.WriteLine("Гладиатор наносит удвоенный урон!");
+                Console.WriteLine("Гладиатор наносит удвоенный урон!\n");
             }
 
             enemyGladiator.TakeDamage(damage);
@@ -117,9 +241,9 @@ namespace oopTask88
             if (_attackNumber >= _maxAttackNumber)
             {
                 _attackNumber = 0;
+                Console.WriteLine("Гладиатор проводит двойную атаку!\n");
                 enemyGladiator.TakeDamage(Damage);
                 enemyGladiator.TakeDamage(Damage);
-                Console.WriteLine("Гладиатор проводит двойную атаку!");
             }
             else
             {
@@ -145,21 +269,29 @@ namespace oopTask88
         public override void TakeDamage(int damage)
         {
             HealthPoint -= damage;
-            Console.WriteLine($"Гладиатор получает урон - {damage}!");
+            Console.WriteLine($"Противник получает урон - {damage}!\n");
             _ragePointValue += damage;
 
-            if (_ragePointValue >= _maxRagePointValue)
+            if (HealthPoint <= 0)
             {
-                HealthPoint += _healthPointHealingValue;
-                _ragePointValue -= _maxRagePointValue;
-                Console.WriteLine($"Гладиатор восстанавливает здоровья - {_healthPointHealingValue}!");
+                HealthPoint = 0;
+                Console.WriteLine("Противник погиб!\n");
+            }
+            else
+            {
+                if (_ragePointValue >= _maxRagePointValue)
+                {
+                    HealthPoint += _healthPointHealingValue;
+                    _ragePointValue -= _maxRagePointValue;
+                    Console.WriteLine($"Противник восстанавливает здоровья - {_healthPointHealingValue}!\n");
+                }
             }
         }
 
         public override void ShowInfo()
         {
             base.ShowInfo();
-            Console.WriteLine($"Текущая ярость гладиатора - {_ragePointValue}");
+            Console.WriteLine($"Текущая ярость противника - {_ragePointValue}\n");
         }
     }
 
@@ -181,8 +313,8 @@ namespace oopTask88
             if (_manaPoint >= _fireBallManaCostValue)
             {
                 _manaPoint -= _fireBallManaCostValue;
+                Console.WriteLine($"Гладиатор атакует огненным шаром и наносит урон - {_fireBallDamageValue}\n");
                 enemyGladiator.TakeDamage(_fireBallDamageValue);
-                Console.WriteLine($"Гладиатор атакует огненным шаром и наносит урон - {_fireBallDamageValue}");
             }
             else
             {
@@ -220,7 +352,7 @@ namespace oopTask88
             }
             else
             {
-                Console.WriteLine("Гладиатор уворачивается от атаки и не получает урона!");
+                Console.WriteLine("Противник уворачивается от атаки и не получает урона!\n");
             }
         }
     }
