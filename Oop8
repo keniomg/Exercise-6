@@ -11,6 +11,16 @@ namespace oopTask88
         }
     }
 
+    public class UserUtils
+    {
+        private static Random _random = new Random();
+
+        public int GetRandomNumber(int minRandomValue, int maxRandomValue)
+        {
+            return _random.Next(minRandomValue, maxRandomValue);
+        }
+    }
+
     public class Arena
     {
         public void Play()
@@ -107,7 +117,37 @@ namespace oopTask88
             }
         }
 
-        public Gladiator ChooseGladiator()
+        private void ChooseDoubleCriticalStrikeGladiator(out Gladiator gladiator)
+        {
+            gladiator = new DoubleCriticalStrikeGladiator(2000, 60);
+            Console.WriteLine("Выбран гладиатор с вероятностью двойного урона");
+        }
+
+        private void ChooseDoublePunchGladiator(out Gladiator gladiator)
+        {
+            gladiator = new DoublePunchGladiator(1800, 75);
+            Console.WriteLine("Выбран гладиатор с двойным ударом на каждую третью атаку");
+        }
+
+        private void ChooseBerserkGladiator(out Gladiator gladiator)
+        {
+            gladiator = new BerserkGladiator(1500, 50);
+            Console.WriteLine("Выбран гладиатор берсерк");
+        }
+
+        private void ChooseMageGladiator(out Gladiator gladiator)
+        {
+            gladiator = new MageGladiator(2000, 40, 800);
+            Console.WriteLine("Выбран гладиатор маг");
+        }
+
+        private void ChooseEvadingGladiator(out Gladiator gladiator)
+        {
+            gladiator = new EvadingGladiator(2100, 65);
+            Console.WriteLine("Выбран уворачивающийся гладиатор");
+        }
+
+        private Gladiator ChooseGladiator()
         {
             const string ChooseDoubleCriticalStrikeGladiatorCommand = "1";
             const string ChooseDoublePunchGladiatorCommand = "2";
@@ -130,28 +170,23 @@ namespace oopTask88
             switch ( userInput )
             {
                 case ChooseDoubleCriticalStrikeGladiatorCommand:
-                    gladiator = new DoubleCriticalStrikeGladiator(2000, 60);
-                    Console.WriteLine("Выбран гладиатор с вероятностью двойного урона");
+                    ChooseDoubleCriticalStrikeGladiator(out gladiator);
                     break;
 
                 case ChooseDoublePunchGladiatorCommand:
-                    gladiator = new DoublePunchGladiator(1800, 75);
-                    Console.WriteLine("Выбран гладиатор с двойным ударом на каждую третью атаку");
+                    ChooseDoublePunchGladiator(out gladiator);
                     break;
 
                 case ChooseBerserkGladiatorCommand:
-                    gladiator = new BerserkGladiator(1500, 50);
-                    Console.WriteLine("Выбран гладиатор берсерк");
+                    ChooseBerserkGladiator(out gladiator);
                     break;
 
                 case ChooseMageGladiatorCommand:
-                    gladiator = new MageGladiator(2000, 40, 800);
-                    Console.WriteLine("Выбран гладиатор маг");
+                    ChooseMageGladiator(out gladiator);
                     break;
 
                 case ChooseEvadingGladiatorCommand:
-                    gladiator = new EvadingGladiator(2100, 65);
-                    Console.WriteLine("Выбран уворачивающийся гладиатор");
+                    ChooseEvadingGladiator(out gladiator);
                     break;
 
                 default:
@@ -167,7 +202,6 @@ namespace oopTask88
 
     public class Gladiator
     {
-        public int HealthPoint { get; protected set; }
         protected int Damage;
 
         public Gladiator(int healthPoint, int damage) 
@@ -175,6 +209,8 @@ namespace oopTask88
             HealthPoint = healthPoint;
             Damage = damage;
         }
+
+        public int HealthPoint { get; protected set; }
 
         public virtual void TakeDamage(int damage)
         {
@@ -203,21 +239,22 @@ namespace oopTask88
     {
         private int _minMultiplierValue;
         private int _maxMultiplierValue;
-        private Random _random;
+        private UserUtils _userUtils;
 
         public DoubleCriticalStrikeGladiator(int healthPoint, int damage) : base(healthPoint, damage) 
         {
             _minMultiplierValue = 1;
             _maxMultiplierValue = 3;
-            _random = new Random();
+            _userUtils = new UserUtils();
         }
 
         public override void Attack(Gladiator enemyGladiator)
         {
-            int damageMultiplier = _random.Next(_minMultiplierValue, _maxMultiplierValue);
+            int damageMultiplier = _userUtils.GetRandomNumber(_minMultiplierValue, _maxMultiplierValue);
             int damage = Damage * damageMultiplier;
+            int doubleDamageMultiplier = 2;
 
-            if (damageMultiplier == 2)
+            if (damageMultiplier == doubleDamageMultiplier)
             {
                 Console.WriteLine("Гладиатор наносит удвоенный урон!\n");
             }
@@ -325,22 +362,22 @@ namespace oopTask88
 
     public class EvadingGladiator : Gladiator
     {
-        private Random _random;
+        private UserUtils _userUtils;
         private int _evadingChance;
         private int _maxProbabilityValue;
         private int _minProbabilityValue;
 
         public EvadingGladiator(int healthPoint, int damage) : base(healthPoint, damage)
         {
+            _userUtils = new UserUtils();
             _evadingChance = 25;
             _minProbabilityValue = 0;
             _maxProbabilityValue = 101;
-            _random = new Random();
         }
 
         private bool TryEvadeAttack()
         {
-            int takeDamageModifierValue = _random.Next(_minProbabilityValue, _maxProbabilityValue);
+            int takeDamageModifierValue = _userUtils.GetRandomNumber(_minProbabilityValue, _maxProbabilityValue);
             return (takeDamageModifierValue <= _evadingChance);
         }
 
