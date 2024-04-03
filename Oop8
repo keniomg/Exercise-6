@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
 
 namespace oopTask88
 {
@@ -23,9 +25,22 @@ namespace oopTask88
 
     public class Arena
     {
+        private List<Gladiator> gladiators;
+
+        public Arena()
+        {
+            gladiators = new List<Gladiator>() {
+                new DoubleCriticalStrikeGladiator(2000, 60),
+                new DoublePunchGladiator(1800, 75),
+                new BerserkGladiator(2100, 50),
+                new MageGladiator(1500, 40, 1000),
+                new EvadingGladiator(2000, 55)
+            };
+        }
+
         public void Play()
         {
-            const string ChooseGladiatorsAndFightCommand = "1";
+            const string MakeFightCommand = "1";
             const string ExitCommand = "2";
 
             bool isContinue = true;
@@ -34,15 +49,15 @@ namespace oopTask88
             {
                 Console.Clear();
                 Console.WriteLine($"Вы можете выбрать одну из следующих опций:\n" +
-                    $"\nВыбрать гладиаторов и начать бой - {ChooseGladiatorsAndFightCommand}" +
+                    $"\nВыбрать гладиаторов и начать бой - {MakeFightCommand}" +
                     $"\nВыйти из программы - {ExitCommand}\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
                 switch ( userInput )
                 {
-                    case ChooseGladiatorsAndFightCommand:
-                        ChooseGladiatorsAndFight();
+                    case MakeFightCommand:
+                        MakeFight();
                         break;
 
                     case ExitCommand:
@@ -54,19 +69,21 @@ namespace oopTask88
                         break;
                 }
 
+                Console.WriteLine("Для продолжения нажмите любую клавишу...");
                 Console.ReadKey();
+                Console.Clear();
             }
 
             Console.WriteLine("Вы вышли из программы...");
         }
 
-        private void ChooseGladiatorsAndFight()
+        private void MakeFight()
         {
-            Gladiator firstGladiator = ChooseGladiator();
+            Gladiator firstGladiator = ChooseGladiatorType();
 
             if (firstGladiator != null)
             {
-                Gladiator secondGladiator = ChooseGladiator();
+                Gladiator secondGladiator = ChooseGladiatorType();
 
                 if (secondGladiator != null)
                 {
@@ -98,56 +115,23 @@ namespace oopTask88
                 Console.WriteLine("Для следующего хода нажмите любую клавишу...\n");
                 Console.ReadKey();
                 Console.Clear();
+            }
 
-                if (firstGladiator.HealthPoint <= 0 && secondGladiator.HealthPoint > 0)
-                {
-                    Console.WriteLine("Победил второй гладиатор!");
-                    Console.ReadKey();
-                }
-                else if (firstGladiator.HealthPoint > 0 && secondGladiator.HealthPoint <= 0)
-                {
-                    Console.WriteLine("Победил первый гладиатор!");
-                    Console.ReadKey();
-                }
-                else if (firstGladiator.HealthPoint <=0 && secondGladiator.HealthPoint <= 0)
-                {
-                    Console.WriteLine("Оба гладиатора погибли, ничья!");
-                    Console.ReadKey();
-                }
+            if (firstGladiator.HealthPoint <= 0 && secondGladiator.HealthPoint > 0)
+            {
+                Console.WriteLine("Победил второй гладиатор!");
+            }
+            else if (firstGladiator.HealthPoint > 0 && secondGladiator.HealthPoint <= 0)
+            {
+                Console.WriteLine("Победил первый гладиатор!");
+            }
+            else if (firstGladiator.HealthPoint <=0 && secondGladiator.HealthPoint <= 0)
+            {
+                Console.WriteLine("Оба гладиатора погибли, ничья!");
             }
         }
 
-        private void ChooseDoubleCriticalStrikeGladiator(out Gladiator gladiator)
-        {
-            gladiator = new DoubleCriticalStrikeGladiator(2000, 60);
-            Console.WriteLine("Выбран гладиатор с вероятностью двойного урона");
-        }
-
-        private void ChooseDoublePunchGladiator(out Gladiator gladiator)
-        {
-            gladiator = new DoublePunchGladiator(1800, 75);
-            Console.WriteLine("Выбран гладиатор с двойным ударом на каждую третью атаку");
-        }
-
-        private void ChooseBerserkGladiator(out Gladiator gladiator)
-        {
-            gladiator = new BerserkGladiator(1500, 50);
-            Console.WriteLine("Выбран гладиатор берсерк");
-        }
-
-        private void ChooseMageGladiator(out Gladiator gladiator)
-        {
-            gladiator = new MageGladiator(2000, 40, 800);
-            Console.WriteLine("Выбран гладиатор маг");
-        }
-
-        private void ChooseEvadingGladiator(out Gladiator gladiator)
-        {
-            gladiator = new EvadingGladiator(2100, 65);
-            Console.WriteLine("Выбран уворачивающийся гладиатор");
-        }
-
-        private Gladiator ChooseGladiator()
+        private Gladiator ChooseGladiatorType()
         {
             const string ChooseDoubleCriticalStrikeGladiatorCommand = "1";
             const string ChooseDoublePunchGladiatorCommand = "2";
@@ -155,6 +139,13 @@ namespace oopTask88
             const string ChooseMageGladiatorCommand = "4";
             const string ChooseEvadingGladiatorCommand = "5";
 
+            int doubleCriticalStrikeGladiatorIndex = 1;
+            int doublePunchGladiatorIndex = 2;
+            int berserkGladiatorIndex = 3;
+            int evadingGladiatorIndex = 4;
+            int mageGladiatorIndex = 5;
+
+            Gladiator gladiator = null;
             Console.Clear();
             Console.WriteLine($"Вы можете выбрать гладиатора одного из следующих типов:\n" +
                 $"\n{ChooseDoubleCriticalStrikeGladiatorCommand} - Гладиатор с вероятностью двойного урона" +
@@ -164,33 +155,55 @@ namespace oopTask88
                 $"\n{ChooseEvadingGladiatorCommand} - Уворачивающийся гладиатор");
             Console.WriteLine();
             string userInput = Console.ReadLine();
-            Gladiator gladiator = null;
             Console.Clear();
 
-            switch ( userInput )
+            switch (userInput)
             {
                 case ChooseDoubleCriticalStrikeGladiatorCommand:
-                    ChooseDoubleCriticalStrikeGladiator(out gladiator);
+                    gladiator = gladiators[doubleCriticalStrikeGladiatorIndex];
                     break;
 
                 case ChooseDoublePunchGladiatorCommand:
-                    ChooseDoublePunchGladiator(out gladiator);
+                    gladiator = gladiators[doublePunchGladiatorIndex];
                     break;
 
                 case ChooseBerserkGladiatorCommand:
-                    ChooseBerserkGladiator(out gladiator);
+                    gladiator = gladiators[berserkGladiatorIndex];
                     break;
 
                 case ChooseMageGladiatorCommand:
-                    ChooseMageGladiator(out gladiator);
+                    gladiator = gladiators[mageGladiatorIndex];
                     break;
 
                 case ChooseEvadingGladiatorCommand:
-                    ChooseEvadingGladiator(out gladiator);
+                    gladiator = gladiators[evadingGladiatorIndex];
+                    break;
+            }
+
+            switch (gladiator)
+            {
+                case DoubleCriticalStrikeGladiator doubleCriticalStrikeGladiator:
+                    Console.WriteLine("Выбран гладиатор с вероятностью двойного урона");
+                    break;
+
+                case DoublePunchGladiator doublePunchGladiator:
+                    Console.WriteLine("Выбран гладиатор с двойным ударом на каждую третью атаку");
+                    break;
+
+                case BerserkGladiator berserkGladiator:
+                    Console.WriteLine("Выбран гладиатор берсерк");
+                    break;
+
+                case MageGladiator mageGladiator:
+                    Console.WriteLine("Выбран гладиатор маг");
+                    break;
+
+                case EvadingGladiator evadingGladiator:
+                    Console.WriteLine("Выбран уворачивающийся гладиатор");
                     break;
 
                 default:
-                    Console.WriteLine("Введена неверная команда");
+                    Console.WriteLine("Не выбран гладиатор никакого типа");
                     break;
             }
 
@@ -202,14 +215,13 @@ namespace oopTask88
 
     public class Gladiator
     {
-        protected int Damage;
-
         public Gladiator(int healthPoint, int damage) 
         {
             HealthPoint = healthPoint;
             Damage = damage;
         }
 
+        public int Damage { get; protected set; }
         public int HealthPoint { get; protected set; }
 
         public virtual void TakeDamage(int damage)
@@ -314,14 +326,11 @@ namespace oopTask88
                 HealthPoint = 0;
                 Console.WriteLine("Противник погиб!\n");
             }
-            else
+            else if (_ragePointValue >= _maxRagePointValue)
             {
-                if (_ragePointValue >= _maxRagePointValue)
-                {
-                    HealthPoint += _healthPointHealingValue;
-                    _ragePointValue -= _maxRagePointValue;
-                    Console.WriteLine($"Противник восстанавливает здоровья - {_healthPointHealingValue}!\n");
-                }
+                HealthPoint += _healthPointHealingValue;
+                _ragePointValue -= _maxRagePointValue;
+                Console.WriteLine($"Противник восстанавливает здоровья - {_healthPointHealingValue}!\n");
             }
         }
 
