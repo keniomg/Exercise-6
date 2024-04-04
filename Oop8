@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 
 namespace oopTask88
 {
@@ -25,19 +24,6 @@ namespace oopTask88
 
     public class Arena
     {
-        private List<Gladiator> gladiators;
-
-        public Arena()
-        {
-            gladiators = new List<Gladiator>() {
-                new DoubleCriticalStrikeGladiator(2000, 60),
-                new DoublePunchGladiator(1800, 75),
-                new BerserkGladiator(2100, 50),
-                new MageGladiator(1500, 40, 1000),
-                new EvadingGladiator(2000, 55)
-            };
-        }
-
         public void Play()
         {
             const string MakeFightCommand = "1";
@@ -139,46 +125,24 @@ namespace oopTask88
             const string ChooseMageGladiatorCommand = "4";
             const string ChooseEvadingGladiatorCommand = "5";
 
-            int doubleCriticalStrikeGladiatorIndex = 1;
-            int doublePunchGladiatorIndex = 2;
-            int berserkGladiatorIndex = 3;
-            int evadingGladiatorIndex = 4;
-            int mageGladiatorIndex = 5;
-
-            Gladiator gladiator = null;
+            List<Gladiator> gladiators = new List<Gladiator>() {
+                new DoubleCriticalStrikeGladiator(2000, 60),
+                new DoublePunchGladiator(1800, 75),
+                new BerserkGladiator(2100, 50),
+                new MageGladiator(1500, 40, 1000),
+                new EvadingGladiator(2000, 55)
+            };
             Console.Clear();
             Console.WriteLine($"Вы можете выбрать гладиатора одного из следующих типов:\n" +
                 $"\n{ChooseDoubleCriticalStrikeGladiatorCommand} - Гладиатор с вероятностью двойного урона" +
                 $"\n{ChooseDoublePunchGladiatorCommand} - Гладиатор с двойным ударом на каждую третью атаку" +
                 $"\n{ChooseBerserkGladiatorCommand} - Гладиатор берсерк" +
                 $"\n{ChooseMageGladiatorCommand} - Гладиатор маг" +
-                $"\n{ChooseEvadingGladiatorCommand} - Уворачивающийся гладиатор");
-            Console.WriteLine();
-            string userInput = Console.ReadLine();
+                $"\n{ChooseEvadingGladiatorCommand} - Уворачивающийся гладиатор\n");
+            int userInterfaceGladiatorIndex = Convert.ToInt32(Console.ReadLine());
+            int realGladiatorIndex = userInterfaceGladiatorIndex - 1;
+            Gladiator gladiator = gladiators[realGladiatorIndex];
             Console.Clear();
-
-            switch (userInput)
-            {
-                case ChooseDoubleCriticalStrikeGladiatorCommand:
-                    gladiator = gladiators[doubleCriticalStrikeGladiatorIndex];
-                    break;
-
-                case ChooseDoublePunchGladiatorCommand:
-                    gladiator = gladiators[doublePunchGladiatorIndex];
-                    break;
-
-                case ChooseBerserkGladiatorCommand:
-                    gladiator = gladiators[berserkGladiatorIndex];
-                    break;
-
-                case ChooseMageGladiatorCommand:
-                    gladiator = gladiators[mageGladiatorIndex];
-                    break;
-
-                case ChooseEvadingGladiatorCommand:
-                    gladiator = gladiators[evadingGladiatorIndex];
-                    break;
-            }
 
             switch (gladiator)
             {
