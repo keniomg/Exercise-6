@@ -1,0 +1,223 @@
+using System;
+using System.Collections.Generic;
+using static OopTask9.UserUtils;
+
+namespace OopTask9
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Supermarket supermarket = new Supermarket();
+            supermarket.Initialize();
+        }
+    }
+ 
+    public class UserInterface
+    {
+        public static void ShowPressAnyKeyForContinueMessage()
+        {
+            Console.WriteLine("\nДля продолжения нажмите любую клавишу...");
+            Console.ReadKey();
+            Console.Clear();
+        }
+    }
+
+    public class UserUtils
+    {
+        public static Random s_random = new Random();
+    }
+
+    public class Supermarket
+    {
+        private List<Product> _productsRange;
+
+        public Supermarket()
+        {
+            _productsRange = new List<Product>() {
+                new Product("Печенье", 150),
+                new Product("Огурцы", 250),
+                new Product("Говяжьи Ангусы", 500),
+                new Product("Куриная грудка", 350),
+                new Product("Сметана", 100),
+                new Product("Творог", 130),
+                new Product("Помидоры", 280),
+                new Product("Баклажаны", 220),
+                new Product("Вафли", 120),
+                new Product("Черный чай", 80),
+                new Product("Зелёный чай", 75),
+                new Product("Мандарины", 180),
+                new Product("Бананы", 125)
+            };
+        }
+
+        public void Initialize()
+        {
+            const string ServeClientsCommand = "1";
+            const string ExitProgramCommand = "2";
+
+            bool isProgramWorking = true;
+
+            while (isProgramWorking)
+            {
+                Console.WriteLine($"Добро пожаловать в программу администрирования супермаркетом. " +
+                    $"Вы можете выполнить одну из следующих команд\n\n{ServeClientsCommand} - Обслужить клиентов" +
+                    $"\n{ExitProgramCommand} - выйти из программы\n");
+                string userInput = Console.ReadLine();
+
+                switch (userInput)
+                {
+                    case ServeClientsCommand:
+                        ServeClients();
+                        break;
+
+                    case ExitProgramCommand:
+                        isProgramWorking = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+            }
+        }
+
+        public void ServeClients()
+        {
+            List<Buyer> buyers = SetBuyersList();
+
+            for (int i = 0; i < buyers.Count; i++)
+            {
+                MakeDeal(buyers[i]);
+
+                if (i == buyers.Count - 1)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Все клиенты обслужены");
+                }
+            }
+        }
+
+        public List<Buyer> SetBuyersList()
+        {
+            int minimumBuyersNumber = 1;
+            int maximumBuyersNumber = 10;
+            int buyersNumber = s_random.Next(minimumBuyersNumber, maximumBuyersNumber);
+            List<Buyer> buyersList = new List<Buyer>();
+
+            for (int i = 0; i < buyersNumber; i++)
+            {
+                buyersList.Add(new Buyer(Buyer.SetMoney(), Buyer.SetProductsInBasketList(_productsRange)));
+            }
+
+            return buyersList;
+        }
+
+        public void MakeDeal(Buyer buyer)
+        {
+            int totalProductsCost = buyer.CalculateTotalProductsCost();
+            Console.Clear();
+
+            while (buyer.Money < totalProductsCost && buyer.ProductsInBasket.Count > 0)
+            {
+                int minimumProductIndex = 0;
+                int maximumProductIndex = buyer.ProductsInBasket.Count;
+                int removingProductIndex = s_random.Next(minimumProductIndex, maximumProductIndex);
+                Console.WriteLine($"У покупателя не хватает денег для оплаты всей корзины (деньги покупателя: {buyer.Money};" +
+                    $" суммарная стоимость корзины: {totalProductsCost}),\nпоэтому будет удалён следующий продукт:\n\n"
+                    + buyer.ProductsInBasket[removingProductIndex].ShowInfo());
+                buyer.ProductsInBasket.Remove(buyer.ProductsInBasket[removingProductIndex]);
+                totalProductsCost = buyer.CalculateTotalProductsCost();
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+            }
+
+            if (buyer.ProductsInBasket.Count == 0)
+            {
+                Console.WriteLine("У покупателя не хватает денег для оплаты ни одного продукта из корзины");
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+            }
+            else
+            {
+                buyer.PayForProducts(totalProductsCost);
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+            }
+        }
+    }
+
+    public class Buyer
+    {
+        public Buyer(int money, List<Product> productsInBasket) 
+        {
+            Money = money;
+            ProductsInBasket = productsInBasket;
+        }
+
+        public List<Product> ProductsInBasket { get; private set; }
+        public int Money { get; private set; }
+
+        public static int SetMoney()
+        {
+            int minimumBuyersMoney = 100;
+            int maximumBuyersMoney = 3001;
+
+            return s_random.Next(minimumBuyersMoney, maximumBuyersMoney);
+        }
+
+        public static List<Product> SetProductsInBasketList(List<Product> productsRange)
+        {
+            int minimumProductIndex = 0;
+            int maximumProductIndex = productsRange.Count - 1;
+            int minimumProductsNumber = 1;
+            int maximumProductsNumber = 16;
+            int productsNumber = s_random.Next(minimumProductsNumber, maximumProductsNumber);
+            List<Product> productsInBuyersBasketList = new List<Product>();
+
+            for (int i = 0; i < productsNumber; i++)
+            {
+                int productIndex = s_random.Next(minimumProductIndex, maximumProductIndex);
+                productsInBuyersBasketList.Add(productsRange[productIndex]);
+            }
+
+            return productsInBuyersBasketList;
+        }
+
+        public int PayForProducts(int totalProductsCost)
+        {
+            Money -= totalProductsCost;
+            Console.WriteLine($"Покупатель оплатил продукты из корзины на сумму: " + totalProductsCost);
+            return totalProductsCost;
+        }
+
+        public int CalculateTotalProductsCost()
+        {
+            int totalCost = 0;
+
+            foreach (Product product in ProductsInBasket)
+            {
+                totalCost += product.Cost;
+            }
+
+            return totalCost;
+        }
+    }
+
+    public class Product
+    {
+        public Product(string title, int cost)
+        {
+            Title = title;
+            Cost = cost;
+        }
+
+        public string Title { get; private set; }
+        public int Cost { get; private set; }
+
+        public string ShowInfo()
+        {
+            string productInfo = $"Наименование продукта: {Title}\nСтоимость продукта: {Cost}";
+            return productInfo;
+        }
+    }
+}
