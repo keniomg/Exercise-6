@@ -80,6 +80,8 @@ namespace oopTask88
                 {
                     Console.WriteLine("Введена неверная команда");
                 }
+
+                ShowWinnerInfo(firstGladiator, secondGladiator);
             }
             else
             {
@@ -103,7 +105,10 @@ namespace oopTask88
                 Console.ReadKey();
                 Console.Clear();
             }
+        }
 
+        private void ShowWinnerInfo(Gladiator firstGladiator, Gladiator secondGladiator)
+        {
             if (firstGladiator.HealthPoint <= 0 && secondGladiator.HealthPoint > 0)
             {
                 Console.WriteLine("Победил второй гладиатор!");
@@ -130,11 +135,11 @@ namespace oopTask88
             Gladiator gladiator = null;
             Console.Clear();
             Console.WriteLine($"Вы можете выбрать гладиатора одного из следующих типов:\n" +
-                $"\n1 - Гладиатор с вероятностью двойного урона" +
-                $"\n2 - Гладиатор с двойным ударом на каждую третью атаку" +
-                $"\n3 - Гладиатор берсерк" +
-                $"\n4 - Гладиатор маг" +
-                $"\n5 - Уворачивающийся гладиатор\n");
+                $"\n1 - {DoubleCriticalStrikeGladiator.TypeInfo}" +
+                $"\n2 - {DoublePunchGladiator.TypeInfo}" +
+                $"\n3 - {BerserkGladiator.TypeInfo}" +
+                $"\n4 - {MageGladiator.TypeInfo}" +
+                $"\n5 - {EvadingGladiator.TypeInfo}\n");
             int userInterfaceGladiatorIndex = Convert.ToInt32(Console.ReadLine());
             int realGladiatorIndex = userInterfaceGladiatorIndex - 1;
             Console.Clear();
@@ -142,7 +147,7 @@ namespace oopTask88
             if (realGladiatorIndex >= 0 && realGladiatorIndex < gladiators.Count)
             {
                 gladiator = gladiators[realGladiatorIndex];
-                gladiator.ShowChoosedTypeInfo();
+                Console.WriteLine("Выбран" + " " + gladiator.ShowTypeInfo());
             }
             else
             {
@@ -178,7 +183,10 @@ namespace oopTask88
             }
         }
         
-        public virtual void ShowChoosedTypeInfo() {}
+        public virtual string ShowTypeInfo() 
+        {
+            return null;
+        }
 
         public virtual void Attack(Gladiator enemyGladiator)
         {
@@ -200,11 +208,14 @@ namespace oopTask88
         {
             _minMultiplierValue = 1;
             _maxMultiplierValue = 3;
+            TypeInfo = "гладиатор с вероятностью двойного урона";
         }
 
-        public override void ShowChoosedTypeInfo()
+        public static string TypeInfo { get; private set; }
+
+        public override string ShowTypeInfo()
         {
-            Console.WriteLine("Выбран гладиатор с вероятностью двойного урона");
+            return TypeInfo;
         }
 
         public override void Attack(Gladiator enemyGladiator)
@@ -230,11 +241,14 @@ namespace oopTask88
         public DoublePunchGladiator(int healthPoint, int damage) : base(healthPoint, damage) 
         {
             _maxAttackNumber = 3;
+            TypeInfo = "гладиатор с двойным ударом на каждую третью атаку";
         }
 
-        public override void ShowChoosedTypeInfo()
+        public static string TypeInfo { get; private set; }
+
+        public override string ShowTypeInfo()
         {
-            Console.WriteLine("Выбран гладиатор с двойным ударом на каждую третью атаку");
+            return TypeInfo;
         }
 
         public override void Attack(Gladiator enemyGladiator)
@@ -265,11 +279,14 @@ namespace oopTask88
             _ragePointValue = 0;
             _maxRagePointValue = 300;
             _healthPointHealingValue = 100;
+            TypeInfo = "гладиатор берсерк";
         }
 
-        public override void ShowChoosedTypeInfo()
+        public static string TypeInfo { get; private set; }
+
+        public override string ShowTypeInfo()
         {
-            Console.WriteLine("Выбран гладиатор берсерк");
+            return TypeInfo;
         }
 
         public override void TakeDamage(int damage)
@@ -309,11 +326,14 @@ namespace oopTask88
             _fireBallDamageValue = 150;
             _fireBallManaCostValue = 100;
             _manaPoint = manaPoint;
+            TypeInfo = "гладиатор маг";
         }
 
-        public override void ShowChoosedTypeInfo()
+        public static string TypeInfo { get; private set; }
+
+        public override string ShowTypeInfo()
         {
-            Console.WriteLine("Выбран гладиатор маг");
+            return TypeInfo;
         }
 
         public override void Attack(Gladiator enemyGladiator)
@@ -342,17 +362,20 @@ namespace oopTask88
             _evadingChance = 25;
             _minProbabilityValue = 0;
             _maxProbabilityValue = 101;
+            TypeInfo = "уворачивающийся гладиатор";
+        }
+
+        public static string TypeInfo { get; private set; }
+
+        public override string ShowTypeInfo()
+        {
+            return TypeInfo;
         }
 
         private bool CanEvadeAttack()
         {
             int takeDamageModifierValue = GetRandomNumber(_minProbabilityValue, _maxProbabilityValue);
             return (takeDamageModifierValue <= _evadingChance);
-        }
-
-        public override void ShowChoosedTypeInfo()
-        {
-            Console.WriteLine("Выбран уворачивающийся гладиатор");
         }
 
         public override void TakeDamage(int damage)
