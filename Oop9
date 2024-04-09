@@ -105,11 +105,12 @@ namespace OopTask9
             int minimumBuyersNumber = 1;
             int maximumBuyersNumber = 10;
             int buyersNumber = s_random.Next(minimumBuyersNumber, maximumBuyersNumber);
+            Buyer buyer = new Buyer();
             List<Buyer> buyersList = new List<Buyer>();
 
             for (int i = 0; i < buyersNumber; i++)
             {
-                buyersList.Add(new Buyer(Buyer.SetMoney(), Buyer.SetProductsInBasketList(_productsRange)));
+                buyersList.Add(new Buyer(buyer.SetMoney(), buyer.SetProductsInBasketList(_productsRange)));
             }
 
             return buyersList;
@@ -154,10 +155,16 @@ namespace OopTask9
             ProductsInBasket = productsInBasket;
         }
 
+        public Buyer()
+        {
+            Money = 0;
+            ProductsInBasket = null;
+        }
+
         public List<Product> ProductsInBasket { get; private set; }
         public int Money { get; private set; }
 
-        public static int SetMoney()
+        public int SetMoney()
         {
             int minimumBuyersMoney = 100;
             int maximumBuyersMoney = 3001;
@@ -165,7 +172,7 @@ namespace OopTask9
             return s_random.Next(minimumBuyersMoney, maximumBuyersMoney);
         }
 
-        public static List<Product> SetProductsInBasketList(List<Product> productsRange)
+        public List<Product> SetProductsInBasketList(List<Product> productsRange)
         {
             int minimumProductIndex = 0;
             int maximumProductIndex = productsRange.Count - 1;
