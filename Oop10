@@ -1,0 +1,309 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using static OopTask10.UserUtils;
+
+namespace OopTask10
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            War war = new War();
+            war.Play();
+
+        }
+    }
+
+    public class UserUtils
+    {
+        public static Random s_random = new Random();
+    }
+
+    public class War
+    {
+        public War()
+        {
+            SoldierTypes = new List<Soldier>()
+            {
+                new Soldier(1500, 50, 100),
+                new Sniper(1200, 20, 150, 2),
+                new Splasher(800, 40, 70),
+                new MultipleAttacker(1000, 10, 100)
+            };
+        }
+
+        public List<Soldier> SoldierTypes { get; private set; }
+
+        public void Play()
+        {
+            const string CommandStartBattle = "1";
+            const string CommandExit = "2";
+
+            bool isContinue = true;
+
+            while (isContinue)
+            {
+                Console.Clear();
+                Console.WriteLine($"Вы можете выбрать одну из следующих опций:\n" +
+                    $"\nСформировать взводы и начать бой - {CommandStartBattle}" +
+                    $"\nВыйти из программы - {CommandExit}\n");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+                Platoon firstPlatoon = new Platoon(FormSoldiersList());
+                Platoon secondPlatoon = new Platoon(FormSoldiersList());
+
+                switch (userInput)
+                {
+                    case CommandStartBattle:
+                        StartBattle(firstPlatoon, secondPlatoon);
+                        break;
+
+                    case CommandExit:
+                        isContinue = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.WriteLine("Для продолжения нажмите любую клавишу...");
+                Console.ReadKey();
+                Console.Clear();
+            }
+
+            Console.WriteLine("Вы вышли из программы...");
+        }
+
+        private List<Soldier> FormSoldiersList()
+        {
+            int minimumSoldiersNumber = 5;
+            int maximumSoldiersNumber = 8;
+            int soldiersNumber = s_random.Next(minimumSoldiersNumber, maximumSoldiersNumber);
+            List<Soldier> platoonSoldiersList = new List<Soldier>(soldiersNumber);
+            int soldierTypeIndex;
+
+            for (int i = 0; i < platoonSoldiersList.Capacity; i++)
+            {
+                SoldierTypes = new List<Soldier>()
+                {
+                    new Soldier(1500, 50, 100),
+                    new Sniper(1200, 20, 150, 2),
+                    new Splasher(800, 40, 70),
+                    new MultipleAttacker(1000, 10, 100)
+                };
+                soldierTypeIndex = s_random.Next(0, SoldierTypes.Count);
+                platoonSoldiersList.Add(SoldierTypes[soldierTypeIndex]);
+            }
+
+            return platoonSoldiersList;
+        }
+
+        private void StartBattle(Platoon firstPlatoon, Platoon secondPlatoon)
+        {
+            while (firstPlatoon.SoldiersList.Count > 0 && secondPlatoon.SoldiersList.Count > 0)
+            {
+                Console.WriteLine("Первый взвод атакует второй взвод!\n");
+                firstPlatoon.Attack(secondPlatoon);
+                Console.WriteLine("Второй взвод атакует первый взвод!\n");
+                secondPlatoon.Attack(firstPlatoon);
+                Console.WriteLine("Нажмите любую клавишу для продолжения...\n");
+                Console.ReadKey();
+                Console.Clear();
+            }
+
+            if (firstPlatoon.SoldiersList.Count == 0 && secondPlatoon.SoldiersList.Count > 0)
+            {
+                Console.WriteLine("Победил второй взвод!");
+            }
+            else if (firstPlatoon.SoldiersList.Count > 0 && secondPlatoon.SoldiersList.Count == 0)
+            {
+                Console.WriteLine("Победил первый взвод!");
+            }
+            else if (firstPlatoon.SoldiersList.Count == 0 && secondPlatoon.SoldiersList.Count == 0)
+            {
+                Console.WriteLine("Ничья!");
+            }
+        }
+    }
+
+    public class Platoon
+    {
+        public Platoon(List<Soldier> soldiersList)
+        {
+            SoldiersList = soldiersList;
+        }
+
+        public List<Soldier> SoldiersList { get; private set; }
+
+        public void Attack(Platoon platoon)
+        {
+            if (SoldiersList.Count > 0)
+            {
+                foreach (Soldier soldier in SoldiersList)
+                {
+                    if (platoon.SoldiersList.Count > 0)
+                    {
+                        soldier.Attack(platoon.SoldiersList);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Во вражеском взводе не осталось солдат!");
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("В этом взводе не осталось солдат!");
+            }
+        }
+    }
+
+    public class Soldier
+    {
+        public Soldier(int health, int armor, int damage)
+        {
+            Health = health;
+            Armor = armor;
+            Damage = damage;
+            Type = "обычный солдат";
+        }
+
+        public int Health { get; protected set; }
+        public int Armor { get; protected set; }
+        public int Damage { get; protected set; }
+        public string Type {  get; protected set; }
+
+        public virtual void Attack(List<Soldier> soldiers)
+        {
+            int attackedEnemyIndex = s_random.Next(0, soldiers.Count);
+            int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
+            soldiers[attackedEnemyIndex].Health -= makedDamage;
+
+            if (soldiers[attackedEnemyIndex].Health > 0)
+            {
+                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
+            }
+            else
+            {
+                soldiers[attackedEnemyIndex].Health = 0;
+                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
+                Soldier diedSoldier = soldiers[attackedEnemyIndex];
+                soldiers.Remove(diedSoldier);
+            }
+        }
+
+        public virtual void MakeDamage(int attackedEnemyIndex, List<Soldier> soldiers, int makedDamage)
+        {
+            soldiers[attackedEnemyIndex].Health -= makedDamage;
+
+            if (soldiers[attackedEnemyIndex].Health > 0)
+            {
+                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
+            }
+            else
+            {
+                ((Splasher)soldiers[attackedEnemyIndex]).Health = 0;
+                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
+                Soldier diedSoldier = soldiers[attackedEnemyIndex];
+                soldiers.Remove(diedSoldier);
+            }
+        }
+    }
+
+    public class Sniper : Soldier
+    {
+        public Sniper(int health, int armor, int damage, int damageMultiplier) : base(health, armor, damage*damageMultiplier) 
+        {
+            Type = "снайпер";
+        }
+    }
+
+    public class Splasher : Soldier 
+    {
+        public Splasher(int health, int armor, int damage) : base(health, armor, damage) 
+        {
+            Type = "сплэшер";
+        }
+        
+        public override void Attack(List <Soldier> soldiers) 
+        {
+            int attackedEmemiesNumber = 3;
+            int attackedEnemyIndex;
+            int[] attackedEnemiesIndexes = new int[attackedEmemiesNumber];
+
+            if (attackedEmemiesNumber > soldiers.Count)
+            {
+                attackedEmemiesNumber = soldiers.Count;
+            }
+
+            for (int i = 0; i < attackedEmemiesNumber; i++)
+            {
+                attackedEnemyIndex = s_random.Next(0, soldiers.Count);
+
+                if (attackedEnemiesIndexes.Contains(attackedEnemyIndex) == false)
+                {
+                    attackedEnemiesIndexes[i] = attackedEnemyIndex;
+                    int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
+                    ((Splasher)soldiers[attackedEnemyIndex]).Health -= makedDamage;
+
+                    if (soldiers[attackedEnemyIndex].Health > 0)
+                    {
+                        Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
+                    }
+                    else
+                    {
+                        ((Splasher)soldiers[attackedEnemyIndex]).Health = 0;
+                        Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
+                        Soldier diedSoldier = soldiers[attackedEnemyIndex];
+                        soldiers.Remove(diedSoldier);
+                    }
+                }
+                else
+                {
+                    i--;
+                }
+            }
+        }
+    }
+
+    public class MultipleAttacker : Soldier
+    {
+        public MultipleAttacker(int health, int armor, int damage) : base(health, armor, damage) 
+        {
+            Type = "множественный атакователь";
+        }
+        
+        public override void Attack(List<Soldier> soldiers)
+        {
+            int attacksNumber = 3;
+            int attackedEnemyIndex;
+
+            if (attacksNumber > soldiers.Count)
+            {
+                attacksNumber = soldiers.Count;
+            }
+
+            for (int i = 0; i < attacksNumber; i++)
+            {
+                attackedEnemyIndex = s_random.Next(0, soldiers.Count);
+                int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
+                ((MultipleAttacker)soldiers[attackedEnemyIndex]).Health -= makedDamage;
+
+                if (soldiers[attackedEnemyIndex].Health > 0)
+                {
+                    Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
+                }
+                else
+                {
+                    ((MultipleAttacker)soldiers[attackedEnemyIndex]).Health = 0;
+                    Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
+                    Soldier diedSoldier = soldiers[attackedEnemyIndex];
+                    soldiers.Remove(diedSoldier);
+                }
+            }
+        }
+    }
+}
