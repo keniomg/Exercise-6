@@ -20,6 +20,16 @@ namespace OopTask10
         public static Random s_random = new Random();
     }
 
+    public class UserInterface
+    {
+        public static void ShowPressAnyKeyForContinueMessage()
+        {
+            Console.WriteLine("\nДля продолжения нажмите любую клавишу...");
+            Console.ReadKey();
+            Console.Clear();
+        }
+    }
+
     public class War
     {
         public War()
@@ -68,9 +78,7 @@ namespace OopTask10
                         break;
                 }
 
-                Console.WriteLine("Для продолжения нажмите любую клавишу...");
-                Console.ReadKey();
-                Console.Clear();
+                UserInterface.ShowPressAnyKeyForContinueMessage();
             }
 
             Console.WriteLine("Вы вышли из программы...");
@@ -83,6 +91,7 @@ namespace OopTask10
             int soldiersNumber = s_random.Next(minimumSoldiersNumber, maximumSoldiersNumber);
             List<Soldier> platoonSoldiersList = new List<Soldier>(soldiersNumber);
             int soldierTypeIndex;
+            Console.WriteLine($"Размер взвода составит: {soldiersNumber}");
 
             for (int i = 0; i < platoonSoldiersList.Capacity; i++)
             {
@@ -95,8 +104,10 @@ namespace OopTask10
                 };
                 soldierTypeIndex = s_random.Next(0, SoldierTypes.Count);
                 platoonSoldiersList.Add(SoldierTypes[soldierTypeIndex]);
+                Console.WriteLine("Добавлен солдат типа: " + SoldierTypes[soldierTypeIndex].Type);
             }
 
+            UserInterface.ShowPressAnyKeyForContinueMessage();
             return platoonSoldiersList;
         }
 
@@ -106,11 +117,10 @@ namespace OopTask10
             {
                 Console.WriteLine("Первый взвод атакует второй взвод!\n");
                 firstPlatoon.Attack(secondPlatoon);
+                UserInterface.ShowPressAnyKeyForContinueMessage();
                 Console.WriteLine("Второй взвод атакует первый взвод!\n");
                 secondPlatoon.Attack(firstPlatoon);
-                Console.WriteLine("Нажмите любую клавишу для продолжения...\n");
-                Console.ReadKey();
-                Console.Clear();
+                UserInterface.ShowPressAnyKeyForContinueMessage();
             }
 
             if (firstPlatoon.SoldiersList.Count == 0 && secondPlatoon.SoldiersList.Count > 0)
@@ -139,12 +149,16 @@ namespace OopTask10
 
         public void Attack(Platoon platoon)
         {
+            int attackingSoldierNumber = 0;
+
             if (SoldiersList.Count > 0)
             {
                 foreach (Soldier soldier in SoldiersList)
                 {
                     if (platoon.SoldiersList.Count > 0)
                     {
+                        attackingSoldierNumber++;
+                        Console.WriteLine($"Атакует солдат под номером {attackingSoldierNumber}\n");
                         soldier.Attack(platoon.SoldiersList);
                     }
                     else
@@ -180,32 +194,23 @@ namespace OopTask10
         {
             int attackedEnemyIndex = s_random.Next(0, soldiers.Count);
             int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
-            soldiers[attackedEnemyIndex].Health -= makedDamage;
-
-            if (soldiers[attackedEnemyIndex].Health > 0)
-            {
-                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
-            }
-            else
-            {
-                soldiers[attackedEnemyIndex].Health = 0;
-                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
-                Soldier diedSoldier = soldiers[attackedEnemyIndex];
-                soldiers.Remove(diedSoldier);
-            }
+            MakeDamage(attackedEnemyIndex, soldiers, makedDamage);
         }
 
         public virtual void MakeDamage(int attackedEnemyIndex, List<Soldier> soldiers, int makedDamage)
         {
             soldiers[attackedEnemyIndex].Health -= makedDamage;
+            int attackedEnemyNumber = attackedEnemyIndex + 1;
 
             if (soldiers[attackedEnemyIndex].Health > 0)
             {
-                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
+                Console.WriteLine($"{Type} атакует солдата противника под номером {attackedEnemyNumber} типа '{soldiers[attackedEnemyIndex].Type}'" +
+                    $"\nи наносит урона: {makedDamage}\n" +
+                    $"Оставшееся здоровье атакованного солдата: {soldiers[attackedEnemyIndex].Health}\n");
             }
             else
             {
-                ((Splasher)soldiers[attackedEnemyIndex]).Health = 0;
+                soldiers[attackedEnemyIndex].Health = 0;
                 Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
                 Soldier diedSoldier = soldiers[attackedEnemyIndex];
                 soldiers.Remove(diedSoldier);
@@ -247,19 +252,7 @@ namespace OopTask10
                 {
                     attackedEnemiesIndexes[i] = attackedEnemyIndex;
                     int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
-                    ((Splasher)soldiers[attackedEnemyIndex]).Health -= makedDamage;
-
-                    if (soldiers[attackedEnemyIndex].Health > 0)
-                    {
-                        Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
-                    }
-                    else
-                    {
-                        ((Splasher)soldiers[attackedEnemyIndex]).Health = 0;
-                        Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
-                        Soldier diedSoldier = soldiers[attackedEnemyIndex];
-                        soldiers.Remove(diedSoldier);
-                    }
+                    MakeDamage(attackedEnemyIndex, soldiers, makedDamage);
                 }
                 else
                 {
@@ -290,18 +283,10 @@ namespace OopTask10
             {
                 attackedEnemyIndex = s_random.Next(0, soldiers.Count);
                 int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
-                ((MultipleAttacker)soldiers[attackedEnemyIndex]).Health -= makedDamage;
 
                 if (soldiers[attackedEnemyIndex].Health > 0)
                 {
-                    Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и наносит урона: {makedDamage}\n");
-                }
-                else
-                {
-                    ((MultipleAttacker)soldiers[attackedEnemyIndex]).Health = 0;
-                    Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
-                    Soldier diedSoldier = soldiers[attackedEnemyIndex];
-                    soldiers.Remove(diedSoldier);
+                    MakeDamage(attackedEnemyIndex, soldiers, makedDamage);
                 }
             }
         }
