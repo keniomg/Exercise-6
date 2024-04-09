@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using static OopTask10.UserUtils;
 
 namespace OopTask10
@@ -11,7 +10,6 @@ namespace OopTask10
         {
             War war = new War();
             war.Play();
-
         }
     }
 
@@ -24,7 +22,7 @@ namespace OopTask10
     {
         public static void ShowPressAnyKeyForContinueMessage()
         {
-            Console.WriteLine("\nДля продолжения нажмите любую клавишу...");
+            Console.WriteLine("\nдля продолжения нажмите любую клавишу...");
             Console.ReadKey();
             Console.Clear();
         }
@@ -60,13 +58,11 @@ namespace OopTask10
                     $"\nВыйти из программы - {CommandExit}\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
-                Platoon firstPlatoon = new Platoon(FormSoldiersList());
-                Platoon secondPlatoon = new Platoon(FormSoldiersList());
 
                 switch (userInput)
                 {
                     case CommandStartBattle:
-                        StartBattle(firstPlatoon, secondPlatoon);
+                        StartBattle();
                         break;
 
                     case CommandExit:
@@ -111,16 +107,23 @@ namespace OopTask10
             return platoonSoldiersList;
         }
 
-        private void StartBattle(Platoon firstPlatoon, Platoon secondPlatoon)
+        private void StartBattle()
         {
+            Platoon firstPlatoon = new Platoon(FormSoldiersList());
+            Platoon secondPlatoon = new Platoon(FormSoldiersList());
+
             while (firstPlatoon.SoldiersList.Count > 0 && secondPlatoon.SoldiersList.Count > 0)
             {
                 Console.WriteLine("Первый взвод атакует второй взвод!\n");
                 firstPlatoon.Attack(secondPlatoon);
                 UserInterface.ShowPressAnyKeyForContinueMessage();
-                Console.WriteLine("Второй взвод атакует первый взвод!\n");
-                secondPlatoon.Attack(firstPlatoon);
-                UserInterface.ShowPressAnyKeyForContinueMessage();
+                
+                if (secondPlatoon.SoldiersList.Count > 0)
+                {
+                    Console.WriteLine("Второй взвод атакует первый взвод!\n");
+                    secondPlatoon.Attack(firstPlatoon);
+                    UserInterface.ShowPressAnyKeyForContinueMessage();
+                }
             }
 
             if (firstPlatoon.SoldiersList.Count == 0 && secondPlatoon.SoldiersList.Count > 0)
@@ -211,7 +214,8 @@ namespace OopTask10
             else
             {
                 soldiers[attackedEnemyIndex].Health = 0;
-                Console.WriteLine($"{Type} атакует солдата противника типа '{soldiers[attackedEnemyIndex].Type}' и убивает его!\n");
+                Console.WriteLine($"{Type} атакует солдата противника под номером {attackedEnemyNumber} типа '{soldiers[attackedEnemyIndex].Type}'" +
+                    $"\nи убивает его!\n");
                 Soldier diedSoldier = soldiers[attackedEnemyIndex];
                 soldiers.Remove(diedSoldier);
             }
@@ -237,12 +241,13 @@ namespace OopTask10
         {
             int attackedEmemiesNumber = 3;
             int attackedEnemyIndex;
-            int[] attackedEnemiesIndexes = new int[attackedEmemiesNumber];
 
             if (attackedEmemiesNumber > soldiers.Count)
             {
                 attackedEmemiesNumber = soldiers.Count;
             }
+
+            List<int> attackedEnemiesIndexes = new List<int>(attackedEmemiesNumber);
 
             for (int i = 0; i < attackedEmemiesNumber; i++)
             {
@@ -250,7 +255,7 @@ namespace OopTask10
 
                 if (attackedEnemiesIndexes.Contains(attackedEnemyIndex) == false)
                 {
-                    attackedEnemiesIndexes[i] = attackedEnemyIndex;
+                    attackedEnemiesIndexes.Add(attackedEnemyIndex);
                     int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
                     MakeDamage(attackedEnemyIndex, soldiers, makedDamage);
                 }
