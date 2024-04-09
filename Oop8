@@ -27,8 +27,8 @@ namespace oopTask88
     {
         public void Play()
         {
-            const string MakeFightCommand = "1";
-            const string ExitCommand = "2";
+            const string CommandMakeFight = "1";
+            const string CommandExit = "2";
 
             bool isContinue = true;
 
@@ -36,18 +36,18 @@ namespace oopTask88
             {
                 Console.Clear();
                 Console.WriteLine($"Вы можете выбрать одну из следующих опций:\n" +
-                    $"\nВыбрать гладиаторов и начать бой - {MakeFightCommand}" +
-                    $"\nВыйти из программы - {ExitCommand}\n");
+                    $"\nВыбрать гладиаторов и начать бой - {CommandMakeFight}" +
+                    $"\nВыйти из программы - {CommandExit}\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
                 switch ( userInput )
                 {
-                    case MakeFightCommand:
+                    case CommandMakeFight:
                         MakeFight();
                         break;
 
-                    case ExitCommand:
+                    case CommandExit:
                         isContinue = false;
                         break;
 
@@ -66,22 +66,21 @@ namespace oopTask88
 
         private void MakeFight()
         {
-            Gladiator firstGladiator = ChooseGladiatorType();
-
-            if (firstGladiator != null)
+            Gladiator firstGladiator;
+            
+            if (TryChooseGladiatorType(out firstGladiator) == true)
             {
-                Gladiator secondGladiator = ChooseGladiatorType();
-
-                if (secondGladiator != null)
+                Gladiator secondGladiator;
+                
+                if (TryChooseGladiatorType(out secondGladiator) == true)
                 {
                     Fight(firstGladiator, secondGladiator);
+                    ShowWinnerInfo(firstGladiator, secondGladiator);
                 }
                 else
                 {
                     Console.WriteLine("Введена неверная команда");
                 }
-
-                ShowWinnerInfo(firstGladiator, secondGladiator);
             }
             else
             {
@@ -123,7 +122,7 @@ namespace oopTask88
             }
         }
 
-        private Gladiator ChooseGladiatorType()
+        private bool TryChooseGladiatorType(out Gladiator gladiator)
         {
             List<Gladiator> gladiators = new List<Gladiator>() {
                 new DoubleCriticalStrikeGladiator(2000, 60),
@@ -132,22 +131,35 @@ namespace oopTask88
                 new MageGladiator(1500, 40, 1000),
                 new EvadingGladiator(2000, 55)
             };
-            Gladiator gladiator = null;
+            int gladiatorNumber;
             Console.Clear();
-            Console.WriteLine($"Вы можете выбрать гладиатора одного из следующих типов:\n" +
-                $"\n1 - {DoubleCriticalStrikeGladiator.TypeInfo}" +
-                $"\n2 - {DoublePunchGladiator.TypeInfo}" +
-                $"\n3 - {BerserkGladiator.TypeInfo}" +
-                $"\n4 - {MageGladiator.TypeInfo}" +
-                $"\n5 - {EvadingGladiator.TypeInfo}\n");
-            int userInterfaceGladiatorIndex = Convert.ToInt32(Console.ReadLine());
-            int realGladiatorIndex = userInterfaceGladiatorIndex - 1;
+            Console.WriteLine($"Вы можете выбрать гладиатора одного из следующих типов:\n");
+
+            for (int i = 0; i < gladiators.Count; i++)
+            {
+                gladiatorNumber = i + 1;
+                Console.WriteLine($"{gladiatorNumber} - {gladiators[i].ShowTypeInfo()}");
+            }
+
+            Console.WriteLine();
+            string userInput = null;
+            userInput = Console.ReadLine();
+            gladiator = null;
+            bool isOperationSuccessful = false;
+            
+            if (int.TryParse(userInput, out gladiatorNumber) == false)
+            {
+                return isOperationSuccessful;
+            }
+            
+            int gladiatorIndex = gladiatorNumber - 1;
             Console.Clear();
 
-            if (realGladiatorIndex >= 0 && realGladiatorIndex < gladiators.Count)
+            if (gladiatorIndex >= 0 && gladiatorIndex < gladiators.Count)
             {
-                gladiator = gladiators[realGladiatorIndex];
+                gladiator = gladiators[gladiatorIndex];
                 Console.WriteLine("Выбран" + " " + gladiator.ShowTypeInfo());
+                isOperationSuccessful = true;
             }
             else
             {
@@ -156,7 +168,7 @@ namespace oopTask88
 
             Console.ReadKey();
             Console.Clear();
-            return gladiator;
+            return isOperationSuccessful;
         }
     }
 
@@ -211,7 +223,7 @@ namespace oopTask88
             TypeInfo = "гладиатор с вероятностью двойного урона";
         }
 
-        public static string TypeInfo { get; private set; }
+        public string TypeInfo { get; private set; }
 
         public override string ShowTypeInfo()
         {
@@ -244,7 +256,7 @@ namespace oopTask88
             TypeInfo = "гладиатор с двойным ударом на каждую третью атаку";
         }
 
-        public static string TypeInfo { get; private set; }
+        public string TypeInfo { get; private set; }
 
         public override string ShowTypeInfo()
         {
@@ -282,7 +294,7 @@ namespace oopTask88
             TypeInfo = "гладиатор берсерк";
         }
 
-        public static string TypeInfo { get; private set; }
+        public string TypeInfo { get; private set; }
 
         public override string ShowTypeInfo()
         {
@@ -329,7 +341,7 @@ namespace oopTask88
             TypeInfo = "гладиатор маг";
         }
 
-        public static string TypeInfo { get; private set; }
+        public string TypeInfo { get; private set; }
 
         public override string ShowTypeInfo()
         {
@@ -365,17 +377,11 @@ namespace oopTask88
             TypeInfo = "уворачивающийся гладиатор";
         }
 
-        public static string TypeInfo { get; private set; }
+        public string TypeInfo { get; private set; }
 
         public override string ShowTypeInfo()
         {
             return TypeInfo;
-        }
-
-        private bool CanEvadeAttack()
-        {
-            int takeDamageModifierValue = GetRandomNumber(_minProbabilityValue, _maxProbabilityValue);
-            return (takeDamageModifierValue <= _evadingChance);
         }
 
         public override void TakeDamage(int damage)
@@ -388,6 +394,12 @@ namespace oopTask88
             {
                 Console.WriteLine("Противник уворачивается от атаки и не получает урона!\n");
             }
+        }
+
+        private bool CanEvadeAttack()
+        {
+            int takeDamageModifierValue = GetRandomNumber(_minProbabilityValue, _maxProbabilityValue);
+            return (takeDamageModifierValue <= _evadingChance);
         }
     }
 }
