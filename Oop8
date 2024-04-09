@@ -66,21 +66,10 @@ namespace oopTask88
 
         private void MakeFight()
         {
-            Gladiator firstGladiator;
-            
-            if (TryChooseGladiatorType(out firstGladiator) == true)
+            if (TryChooseGladiatorType(out Gladiator firstGladiator) && TryChooseGladiatorType(out Gladiator secondGladiator))
             {
-                Gladiator secondGladiator;
-                
-                if (TryChooseGladiatorType(out secondGladiator) == true)
-                {
-                    Fight(firstGladiator, secondGladiator);
-                    ShowWinnerInfo(firstGladiator, secondGladiator);
-                }
-                else
-                {
-                    Console.WriteLine("Введена неверная команда");
-                }
+                Fight(firstGladiator, secondGladiator);
+                ShowWinnerInfo(firstGladiator, secondGladiator);
             }
             else
             {
