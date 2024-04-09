@@ -182,6 +182,7 @@ namespace oopTask88
 
         public int Damage { get; protected set; }
         public int HealthPoint { get; protected set; }
+        public string TypeInfo { get; protected set; }
 
         public virtual void TakeDamage(int damage)
         {
@@ -197,7 +198,7 @@ namespace oopTask88
         
         public virtual string ShowTypeInfo() 
         {
-            return null;
+            return TypeInfo;
         }
 
         public virtual void Attack(Gladiator enemyGladiator)
@@ -221,13 +222,6 @@ namespace oopTask88
             _minMultiplierValue = 1;
             _maxMultiplierValue = 3;
             TypeInfo = "гладиатор с вероятностью двойного урона";
-        }
-
-        public string TypeInfo { get; private set; }
-
-        public override string ShowTypeInfo()
-        {
-            return TypeInfo;
         }
 
         public override void Attack(Gladiator enemyGladiator)
@@ -254,13 +248,6 @@ namespace oopTask88
         {
             _maxAttackNumber = 3;
             TypeInfo = "гладиатор с двойным ударом на каждую третью атаку";
-        }
-
-        public string TypeInfo { get; private set; }
-
-        public override string ShowTypeInfo()
-        {
-            return TypeInfo;
         }
 
         public override void Attack(Gladiator enemyGladiator)
@@ -292,13 +279,6 @@ namespace oopTask88
             _maxRagePointValue = 300;
             _healthPointHealingValue = 100;
             TypeInfo = "гладиатор берсерк";
-        }
-
-        public string TypeInfo { get; private set; }
-
-        public override string ShowTypeInfo()
-        {
-            return TypeInfo;
         }
 
         public override void TakeDamage(int damage)
@@ -341,13 +321,6 @@ namespace oopTask88
             TypeInfo = "гладиатор маг";
         }
 
-        public string TypeInfo { get; private set; }
-
-        public override string ShowTypeInfo()
-        {
-            return TypeInfo;
-        }
-
         public override void Attack(Gladiator enemyGladiator)
         {
             if (_manaPoint >= _fireBallManaCostValue)
@@ -375,13 +348,6 @@ namespace oopTask88
             _minProbabilityValue = 0;
             _maxProbabilityValue = 101;
             TypeInfo = "уворачивающийся гладиатор";
-        }
-
-        public string TypeInfo { get; private set; }
-
-        public override string ShowTypeInfo()
-        {
-            return TypeInfo;
         }
 
         public override void TakeDamage(int damage)
