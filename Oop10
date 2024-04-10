@@ -16,6 +16,11 @@ namespace OopTask10
     public class UserUtils
     {
         public static Random s_random = new Random();
+
+        public static int GenerateRandomNumber(int minimumValue, int maximumValue)
+        {
+            return s_random.Next(minimumValue, maximumValue);
+        }
     }
 
     public class UserInterface
@@ -30,17 +35,6 @@ namespace OopTask10
 
     public class War
     {
-        public War()
-        {
-            SoldierTypes = new List<Soldier>()
-            {
-                new Soldier(1500, 50, 100),
-                new Sniper(1200, 20, 150, 2),
-                new Splasher(800, 40, 70),
-                new MultipleAttacker(1000, 10, 100)
-            };
-        }
-
         public List<Soldier> SoldierTypes { get; private set; }
 
         public void Play()
@@ -84,7 +78,7 @@ namespace OopTask10
         {
             int minimumSoldiersNumber = 5;
             int maximumSoldiersNumber = 8;
-            int soldiersNumber = s_random.Next(minimumSoldiersNumber, maximumSoldiersNumber);
+            int soldiersNumber = GenerateRandomNumber(minimumSoldiersNumber, maximumSoldiersNumber);
             List<Soldier> platoonSoldiersList = new List<Soldier>(soldiersNumber);
             int soldierTypeIndex;
             Console.WriteLine($"Размер взвода составит: {soldiersNumber}");
@@ -98,7 +92,7 @@ namespace OopTask10
                     new Splasher(800, 40, 70),
                     new MultipleAttacker(1000, 10, 100)
                 };
-                soldierTypeIndex = s_random.Next(0, SoldierTypes.Count);
+                soldierTypeIndex = GenerateRandomNumber(0, SoldierTypes.Count);
                 platoonSoldiersList.Add(SoldierTypes[soldierTypeIndex]);
                 Console.WriteLine("Добавлен солдат типа: " + SoldierTypes[soldierTypeIndex].Type);
             }
@@ -112,13 +106,13 @@ namespace OopTask10
             Platoon firstPlatoon = new Platoon(FormSoldiersList());
             Platoon secondPlatoon = new Platoon(FormSoldiersList());
 
-            while (firstPlatoon.SoldiersList.Count > 0 && secondPlatoon.SoldiersList.Count > 0)
+            while (firstPlatoon.GetSoldiersListCount() > 0 && secondPlatoon.GetSoldiersListCount() > 0)
             {
                 Console.WriteLine("Первый взвод атакует второй взвод!\n");
                 firstPlatoon.Attack(secondPlatoon);
                 UserInterface.ShowPressAnyKeyForContinueMessage();
                 
-                if (secondPlatoon.SoldiersList.Count > 0)
+                if (secondPlatoon.GetSoldiersListCount() > 0)
                 {
                     Console.WriteLine("Второй взвод атакует первый взвод!\n");
                     secondPlatoon.Attack(firstPlatoon);
@@ -126,15 +120,20 @@ namespace OopTask10
                 }
             }
 
-            if (firstPlatoon.SoldiersList.Count == 0 && secondPlatoon.SoldiersList.Count > 0)
+            DeterminateWinnerPlatoon(firstPlatoon, secondPlatoon);
+        }
+
+        private void DeterminateWinnerPlatoon(Platoon firstPlatoon, Platoon secondPlatoon)
+        {
+            if (firstPlatoon.GetSoldiersListCount() == 0 && secondPlatoon.GetSoldiersListCount() > 0)
             {
                 Console.WriteLine("Победил второй взвод!");
             }
-            else if (firstPlatoon.SoldiersList.Count > 0 && secondPlatoon.SoldiersList.Count == 0)
+            else if (firstPlatoon.GetSoldiersListCount() > 0 && secondPlatoon.GetSoldiersListCount() == 0)
             {
                 Console.WriteLine("Победил первый взвод!");
             }
-            else if (firstPlatoon.SoldiersList.Count == 0 && secondPlatoon.SoldiersList.Count == 0)
+            else if (firstPlatoon.GetSoldiersListCount() == 0 && secondPlatoon.GetSoldiersListCount() == 0)
             {
                 Console.WriteLine("Ничья!");
             }
@@ -143,26 +142,31 @@ namespace OopTask10
 
     public class Platoon
     {
+        private List<Soldier> _soldiersList = new List<Soldier>();
+
         public Platoon(List<Soldier> soldiersList)
         {
-            SoldiersList = soldiersList;
+            _soldiersList = soldiersList;
         }
 
-        public List<Soldier> SoldiersList { get; private set; }
+        public int GetSoldiersListCount()
+        {
+            return _soldiersList.Count;
+        }
 
         public void Attack(Platoon platoon)
         {
             int attackingSoldierNumber = 0;
 
-            if (SoldiersList.Count > 0)
+            if (_soldiersList.Count > 0)
             {
-                foreach (Soldier soldier in SoldiersList)
+                foreach (Soldier soldier in _soldiersList)
                 {
-                    if (platoon.SoldiersList.Count > 0)
+                    if (platoon._soldiersList.Count > 0)
                     {
                         attackingSoldierNumber++;
                         Console.WriteLine($"Атакует солдат под номером {attackingSoldierNumber}\n");
-                        soldier.Attack(platoon.SoldiersList);
+                        soldier.Attack(platoon._soldiersList);
                     }
                     else
                     {
@@ -195,14 +199,24 @@ namespace OopTask10
 
         public virtual void Attack(List<Soldier> soldiers)
         {
-            int attackedEnemyIndex = s_random.Next(0, soldiers.Count);
+            int attackedEnemyIndex = GenerateRandomNumber(0, soldiers.Count);
             int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
             MakeDamage(attackedEnemyIndex, soldiers, makedDamage);
         }
 
+        public virtual void TakeDamage(int takedDamage)
+        {
+            Health -= takedDamage;
+
+            if (Health < 0)
+            {
+                Health = 0;
+            }
+        }
+
         public virtual void MakeDamage(int attackedEnemyIndex, List<Soldier> soldiers, int makedDamage)
         {
-            soldiers[attackedEnemyIndex].Health -= makedDamage;
+            soldiers[attackedEnemyIndex].TakeDamage(makedDamage);
             int attackedEnemyNumber = attackedEnemyIndex + 1;
 
             if (soldiers[attackedEnemyIndex].Health > 0)
@@ -251,7 +265,7 @@ namespace OopTask10
 
             for (int i = 0; i < attackedEmemiesNumber; i++)
             {
-                attackedEnemyIndex = s_random.Next(0, soldiers.Count);
+                attackedEnemyIndex = GenerateRandomNumber(0, soldiers.Count);
 
                 if (attackedEnemiesIndexes.Contains(attackedEnemyIndex) == false)
                 {
@@ -286,7 +300,7 @@ namespace OopTask10
 
             for (int i = 0; i < attacksNumber; i++)
             {
-                attackedEnemyIndex = s_random.Next(0, soldiers.Count);
+                attackedEnemyIndex = GenerateRandomNumber(0, soldiers.Count);
                 int makedDamage = Damage - soldiers[attackedEnemyIndex].Armor;
 
                 if (soldiers[attackedEnemyIndex].Health > 0)
