@@ -1,0 +1,92 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace OopTask11
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    public class AquariumAdministratingProgram
+    {
+        private List<Fish> _fishTypesList;
+
+        public Fish GetFishByIndex(int index)
+        {
+            _fishTypesList = new List<Fish>()
+            {
+                new Fish(15, "Angelfish"),
+                new Fish(12, "Goldfish"),
+                new Fish(17, "Guppy"),
+                new Fish(14, "Shuyka"),
+                new Fish(88, "Karas"),
+            };
+            return _fishTypesList[index];
+        }
+
+        public void Initialize()
+        {
+            bool isContinue
+        }
+    }
+
+    public class Aquarium
+    {
+        private List<Fish> _fishList;
+
+        public Aquarium(int maximumFishNumber, List<Fish> fishList)
+        {
+            MaximumFishNumber = maximumFishNumber;
+            _fishList = fishList;
+        }
+
+        public int MaximumFishNumber { get; private set; }
+
+        public void AddFish(Fish fish)
+        {
+            _fishList.Add(fish);
+        }
+
+        public void RemoveFish(Fish fish)
+        {
+            _fishList.Remove(fish);
+        }
+
+        public void ShowInfo()
+        {
+            foreach (Fish fish in _fishList)
+            {
+                fish.ShowInfo();
+                Console.WriteLine();
+            }
+        }
+    }
+
+    public class Fish
+    {
+        public Fish(int health, string type)
+        {
+            Health = health;
+            Type = type;
+        }
+        
+        public int Health { get; protected set; }
+        public string Type { get; protected set; }
+
+        public void GrowOld(int agingValue)
+        {
+            Health -= agingValue;
+        }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"Вид рыбки {Type}; Здоровье рыбки {Health}");
+        }
+    }
+}
