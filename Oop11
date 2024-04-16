@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static OopTask11.UserUtils;
 
 namespace OopTask11
 {
@@ -10,6 +8,18 @@ namespace OopTask11
     {
         static void Main(string[] args)
         {
+            AquariumAdministratingProgram aquariumAdministratingProgram = new AquariumAdministratingProgram();
+            aquariumAdministratingProgram.Initialize();
+        }
+    }
+
+    public class UserUtils
+    {
+        private static Random _random = new Random();
+
+        public static int GetRandomNumber(int minimumRandomValue, int maximumRandomValue)
+        {
+            return _random.Next(minimumRandomValue, maximumRandomValue);
         }
     }
 
@@ -32,7 +42,159 @@ namespace OopTask11
 
         public void Initialize()
         {
-            bool isContinue
+            const string CommandAddFish = "1";
+            const string CommandRemoveFish = "2";
+            const string CommandExit = "3";
+
+            int minimumMaximumFishNumber = 10;
+            int maximumMaximumFishNumber = 20;
+            List<Fish> fishList = new List<Fish>();
+            Aquarium aquarium = new Aquarium(GetRandomNumber(minimumMaximumFishNumber, maximumMaximumFishNumber), fishList);
+            bool isContinue = true;
+
+            while (isContinue)
+            {
+                Console.Clear();
+                Console.WriteLine("Вы можете выполнить одну из следующих команд:\n\n" +
+                    $"{CommandAddFish} - добавить рыбку в аквариум\n\n" +
+                    $"{CommandRemoveFish} - удалить рыбку из аквариума\n\n" +
+                    $"{CommandExit} - выйти из программы\n\n");
+                Console.SetCursorPosition(0, 15);
+                aquarium.ShowInfo();
+                GrowOld(aquarium);
+                Console.SetCursorPosition(0, 8);
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case CommandAddFish:
+                        AddFish(aquarium);
+                        break;
+                    
+                    case CommandRemoveFish:
+                        RemoveFish(aquarium);
+                        break;
+
+                    case CommandExit:
+                        Exit(out isContinue);
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.ReadKey();
+            }
+        }
+
+        private void GrowOld(Aquarium aquarium)
+        {
+            List<Fish> fishList = aquarium.GetFishList();
+            int agingValue = 3;
+            
+            if (fishList.Count > 0)
+            {
+                for (int i = 0; i < fishList.Count; i++)
+                {
+                    fishList[i].GrowOld(agingValue);
+                }
+            }
+        }
+
+        private void AddFish(Aquarium aquarium)
+        {
+            if (aquarium.GetFishList().Count < aquarium.MaximumFishNumber)
+            {
+                _fishTypesList = new List<Fish>()
+                {
+                    new Fish(15, "Angelfish"),
+                    new Fish(12, "Goldfish"),
+                    new Fish(17, "Guppy"),
+                    new Fish(14, "Shuyka"),
+                    new Fish(88, "Karas"),
+                };
+                Console.WriteLine($"Введите номер добавляемого вида рыбы:\n");
+
+                for (int i = 0; i < _fishTypesList.Count; i++)
+                {
+                    int fishNumber = i + 1;
+                    Console.WriteLine($"{fishNumber} - {_fishTypesList[i].GetType()}\n");
+                }
+
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                if (int.TryParse(userInput, out int addedFishNumber) == false)
+                {
+                    Console.WriteLine("Введено не число");
+                    return;
+                }
+                
+                if (addedFishNumber > _fishTypesList.Count || addedFishNumber == 0)
+                {
+                    Console.WriteLine("Введен неверный номер рыбы");
+                    return;
+                }
+
+                int addedFishIndex = addedFishNumber - 1;
+                aquarium.AddFish(_fishTypesList[addedFishIndex]);
+            }
+            else
+            {
+                Console.WriteLine("В аквариуме уже слишком много рыб");
+            }
+
+            Console.WriteLine("Для продолжения нажмите любую клавишу");
+        }
+
+        private void Exit(out bool isContinue)
+        {
+            isContinue = false;
+            Console.WriteLine("Вы вышли из программы");
+        }
+
+        private void RemoveFish(Aquarium aquarium)
+        {
+            List<Fish> fishList = aquarium.GetFishList();
+
+            if (fishList.Count == 0)
+            {
+                Console.WriteLine("В аквариуме нет ни одной рыбы");
+            }
+            else
+            {
+                Console.WriteLine("Введите номер удаляемой рыбы:\n");
+
+                for (int i = 0; i < fishList.Count; i++)
+                {
+                    int fishNumber = i + 1;
+                    Console.WriteLine($"{fishNumber}:\n");
+                    fishList[i].ShowInfo();
+                    Console.WriteLine();
+                }
+                
+                string userInput = Console.ReadLine();
+
+                if (int.TryParse(userInput, out int removingFishNumber) == false)
+                {
+                    Console.WriteLine("Введено не число");
+                    return;
+                }
+
+                if (removingFishNumber > fishList.Count || removingFishNumber == 0)
+                {
+                    Console.WriteLine("Введен неверный номер рыбы");
+                    return;
+                }
+
+                Console.Clear();
+                int removingFishIndex = removingFishNumber - 1;
+                aquarium.RemoveFish(removingFishIndex);
+            }
+
+            Console.WriteLine("Для продолжения нажмите любую клавишу");
         }
     }
 
@@ -48,14 +210,21 @@ namespace OopTask11
 
         public int MaximumFishNumber { get; private set; }
 
+        public List<Fish> GetFishList()
+        {
+            return _fishList;
+        }
+
         public void AddFish(Fish fish)
         {
             _fishList.Add(fish);
+            Console.WriteLine($"В аквариум добавлена рыбка вида '{fish.Type}'");
         }
 
-        public void RemoveFish(Fish fish)
+        public void RemoveFish(int removingFishIndex)
         {
-            _fishList.Remove(fish);
+            Console.WriteLine($"Из аквариума удалена рыбка вида '{_fishList[removingFishIndex].Type}'");
+            _fishList.RemoveAt(removingFishIndex);
         }
 
         public void ShowInfo()
@@ -84,9 +253,21 @@ namespace OopTask11
             Health -= agingValue;
         }
 
+        public string GetType()
+        {
+            return Type;
+        }
+
         public void ShowInfo()
         {
-            Console.WriteLine($"Вид рыбки {Type}; Здоровье рыбки {Health}");
+            if (Health > 0)
+            {
+                Console.WriteLine($"Вид рыбки {Type}, Здоровье рыбки {Health}");
+            }
+            else
+            {
+                Console.WriteLine($"Рыбка {Type} стала слишком стара и умерла");
+            }
         }
     }
 }
