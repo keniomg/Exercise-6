@@ -1,0 +1,347 @@
+using System;
+using System.Collections.Generic;
+using static OopTask10.UserUtils;
+
+namespace OopTask10
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            War war = new War();
+            war.Play();
+        }
+    }
+
+    public class UserUtils
+    {
+        public static readonly Random s_random = new Random();
+
+        public static int GenerateRandomNumber(int minimumValue, int maximumValue)
+        {
+            return s_random.Next(minimumValue, maximumValue);
+        }
+    }
+
+    public class UserInterface
+    {
+        public static void ShowPressAnyKeyForContinueMessage()
+        {
+            Console.WriteLine("\nдля продолжения нажмите любую клавишу...");
+            Console.ReadKey();
+            Console.Clear();
+        }
+    }
+
+    public class War
+    {
+        private List<Soldier> _soldierTypes;
+
+        public void Play()
+        {
+            const string CommandStartBattle = "1";
+            const string CommandExit = "2";
+
+            bool isContinue = true;
+
+            while (isContinue)
+            {
+                Console.Clear();
+                Console.WriteLine($"Вы можете выбрать одну из следующих опций:\n" +
+                    $"\nСформировать взводы и начать бой - {CommandStartBattle}" +
+                    $"\nВыйти из программы - {CommandExit}\n");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case CommandStartBattle:
+                        StartBattle();
+                        break;
+
+                    case CommandExit:
+                        isContinue = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+            }
+
+            Console.WriteLine("Вы вышли из программы...");
+        }
+
+        public void CountAliveSoldiers(Platoon platoon, out int aliveSoldiers)
+        {
+            aliveSoldiers = 0;
+
+            for (int i = 0; i < platoon.GetSoldiersList().Count; i++)
+            {
+                if (platoon.GetSoldiersList()[i].Health > 0)
+                {
+                    aliveSoldiers++;
+                }
+            }
+        }
+
+        private List<Soldier> FormSoldiersList()
+        {
+            int minimumSoldiersNumber = 7;
+            int maximumSoldiersNumber = 8;
+            int soldiersNumber = GenerateRandomNumber(minimumSoldiersNumber, maximumSoldiersNumber);
+            List<Soldier> platoonSoldiersList = new List<Soldier>(soldiersNumber);
+            int soldierTypeIndex;
+            Console.WriteLine($"Размер взвода составит: {soldiersNumber}");
+
+            for (int i = 0; i < platoonSoldiersList.Capacity; i++)
+            {
+                _soldierTypes = new List<Soldier>()
+                {
+                    new Soldier(1500, 50, 100),
+                    new Sniper(1200, 20, 150, 2),
+                    new Splasher(800, 40, 80),
+                    new MultipleAttacker(1000, 10, 100)
+                };
+                soldierTypeIndex = GenerateRandomNumber(0, _soldierTypes.Count);
+                platoonSoldiersList.Add(_soldierTypes[soldierTypeIndex]);
+                Console.WriteLine("Добавлен солдат типа: " + _soldierTypes[soldierTypeIndex].Type);
+            }
+
+            UserInterface.ShowPressAnyKeyForContinueMessage();
+            return platoonSoldiersList;
+        }
+
+        private void StartBattle()
+        {
+            Platoon firstPlatoon = new Platoon(FormSoldiersList());
+            Platoon secondPlatoon = new Platoon(FormSoldiersList());
+
+            while (firstPlatoon.GetSoldiersList().Count > 0 && secondPlatoon.GetSoldiersList().Count > 0)
+            {
+                Console.WriteLine("Первый взвод атакует второй взвод!\n");
+                firstPlatoon.Attack(secondPlatoon);
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+                Console.WriteLine("Второй взвод атакует первый взвод!\n");
+                secondPlatoon.Attack(firstPlatoon);
+                UserInterface.ShowPressAnyKeyForContinueMessage();
+                firstPlatoon.RemoveDiedSoldiers();
+                secondPlatoon.RemoveDiedSoldiers();
+            }
+
+            DeterminateWinnerPlatoon(firstPlatoon, secondPlatoon);
+        }
+
+        private void DeterminateWinnerPlatoon(Platoon firstPlatoon, Platoon secondPlatoon)
+        {
+            if (firstPlatoon.GetSoldiersList().Count == 0 && secondPlatoon.GetSoldiersList().Count > 0)
+            {
+                Console.WriteLine("Победил второй взвод!");
+            }
+            else if (firstPlatoon.GetSoldiersList().Count > 0 && secondPlatoon.GetSoldiersList().Count == 0)
+            {
+                Console.WriteLine("Победил первый взвод!");
+            }
+            else if (firstPlatoon.GetSoldiersList().Count == 0 && secondPlatoon.GetSoldiersList().Count == 0)
+            {
+                Console.WriteLine("Ничья!");
+            }
+        }
+    }
+
+    public class Platoon
+    {
+        private List<Soldier> _soldiersList = new List<Soldier>();
+
+        public Platoon(List<Soldier> soldiersList)
+        {
+            _soldiersList = soldiersList;
+        }
+
+        public List<Soldier> GetSoldiersList()
+        {
+            return _soldiersList;
+        }
+
+        public void Attack(Platoon platoon)
+        {
+            int attackingSoldierNumber = 0;
+            War war = new War();
+
+            foreach (Soldier soldier in _soldiersList)
+            {
+                war.CountAliveSoldiers(platoon, out int aliveSoldiers);
+
+                if (aliveSoldiers > 0)
+                {
+                    attackingSoldierNumber++;
+                    Console.WriteLine($"\nАтакует солдат номер {attackingSoldierNumber}\n");
+                    soldier.Attack(platoon);
+                }
+            }
+        }
+
+        public void RemoveDiedSoldiers()
+        {
+            for (int i = 0; i < _soldiersList.Count; i++)
+            {
+                if (_soldiersList[i].Health == 0)
+                {
+                    _soldiersList.Remove(_soldiersList[i]);
+                }
+            }
+        }
+    }
+
+    public class Soldier
+    {
+        public Soldier(int health, int armor, int damage)
+        {
+            Health = health;
+            Armor = armor;
+            Damage = damage;
+            Type = "обычный солдат";
+        }
+
+        public int Health { get; protected set; }
+        public int Armor { get; protected set; }
+        public int Damage { get; protected set; }
+        public string Type {  get; protected set; }
+
+        public virtual void Attack(Platoon attackedPlatoon)
+        {
+            bool isAttackPerformed = false;
+            List<Soldier> attackedSoldiersList = attackedPlatoon.GetSoldiersList();
+
+            while (isAttackPerformed == false)
+            {
+                int attackedSoldierIndex = GenerateRandomNumber(0, attackedSoldiersList.Count);
+
+                if (attackedSoldiersList[attackedSoldierIndex].Health > 0)
+                {
+                    int makedDamage = Damage - attackedSoldiersList[attackedSoldierIndex].Armor;
+                    MakeDamage(attackedSoldierIndex, attackedSoldiersList, makedDamage, out Soldier diedSoldier);
+                    isAttackPerformed = true;
+                }
+            }
+        }
+
+        public virtual void MakeDamage(int attackedEnemyIndex, List<Soldier> soldiers, int makedDamage, out Soldier diedSoldier)
+        {
+            diedSoldier = null;
+
+            if (soldiers[attackedEnemyIndex].Health > 0)
+            {
+                soldiers[attackedEnemyIndex].TakeDamage(makedDamage);
+                int attackedEnemyNumber = attackedEnemyIndex + 1;
+
+                if (soldiers[attackedEnemyIndex].Health > 0)
+                {
+                    Console.WriteLine($"{Type} атакует солдата противника под номером {attackedEnemyNumber} типа '{soldiers[attackedEnemyIndex].Type}'" +
+                        $"\nи наносит урона: {makedDamage}\n" +
+                        $"Оставшееся здоровье атакованного солдата: {soldiers[attackedEnemyIndex].Health}\n");
+                }
+                else
+                {
+                    soldiers[attackedEnemyIndex].Health = 0;
+                    Console.WriteLine($"{Type} атакует солдата противника под номером {attackedEnemyNumber} типа '{soldiers[attackedEnemyIndex].Type}'" +
+                        $"\nи убивает его!\n");
+                    diedSoldier = soldiers[attackedEnemyIndex];
+                }
+            }
+        }
+
+        private void TakeDamage(int takedDamage)
+        {
+            Health -= takedDamage;
+
+            if (Health < 0)
+            {
+                Health = 0;
+            }
+        }
+    }
+
+    public class Sniper : Soldier
+    {
+        public Sniper(int health, int armor, int damage, int damageMultiplier) : base(health, armor, damage*damageMultiplier) 
+        {
+            Type = "снайпер";
+        }
+    }
+
+    public class Splasher : Soldier 
+    {
+        public Splasher(int health, int armor, int damage) : base(health, armor, damage) 
+        {
+            Type = "сплэшер";
+        }
+            
+        public override void Attack(Platoon attackedPlatoon) 
+        {
+            int attackedEmemiesNumber = 3;
+            int attackedEnemyIndex;
+            List<Soldier> attackedSoldiersList = attackedPlatoon.GetSoldiersList();
+            War war = new War();
+            war.CountAliveSoldiers(attackedPlatoon, out int aliveSoldiers);
+
+            if (attackedEmemiesNumber > aliveSoldiers)
+            {
+                attackedEmemiesNumber = aliveSoldiers;
+            }
+
+            List<int> attackedEnemiesIndexes = new List<int>(attackedEmemiesNumber);
+
+            for (int i = 0; i < attackedEmemiesNumber; i++)
+            {
+                attackedEnemyIndex = GenerateRandomNumber(0, attackedSoldiersList.Count);
+
+                if (attackedEnemiesIndexes.Contains(attackedEnemyIndex) == false)
+                {
+                    if (attackedSoldiersList[attackedEnemyIndex].Health > 0)
+                    {
+                        attackedEnemiesIndexes.Add(attackedEnemyIndex);
+                        int makedDamage = Damage - attackedSoldiersList[attackedEnemyIndex].Armor;
+                        MakeDamage(attackedEnemyIndex, attackedSoldiersList, makedDamage, out Soldier diedSoldier);
+                    }
+                    else
+                    {
+                        i--;
+                    }
+                }
+                else
+                {
+                    i--;
+                }
+            }
+        }
+    }
+
+    public class MultipleAttacker : Soldier
+    {
+        public MultipleAttacker(int health, int armor, int damage) : base(health, armor, damage) 
+        {
+            Type = "множественный атакователь";
+        }
+        
+        public override void Attack(Platoon attackedPlatoon)
+        {
+            int attacksNumber = 3;
+            int attackedEnemyIndex;
+            List<Soldier> attackedSoldiersList = attackedPlatoon.GetSoldiersList();
+
+            for (int i = 0; i < attacksNumber; i++)
+            {
+                attackedEnemyIndex = GenerateRandomNumber(0, attackedSoldiersList.Count);
+                int makedDamage = Damage - attackedSoldiersList[attackedEnemyIndex].Armor;
+
+                if (attackedSoldiersList[attackedEnemyIndex].Health > 0)
+                {
+                    MakeDamage(attackedEnemyIndex, attackedSoldiersList, makedDamage, out Soldier diedSoldier);
+                }
+            }
+        }
+    }
+}
