@@ -245,8 +245,8 @@ namespace OopTask11
             Type = type;
         }
         
-        public int Health { get; protected set; }
-        public string Type { get; protected set; }
+        public int Health { get; private set; }
+        public string Type { get; private set; }
 
         public void GrowOld(int agingValue)
         {
