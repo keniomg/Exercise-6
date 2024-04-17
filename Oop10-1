@@ -185,11 +185,15 @@ namespace OopTask10
 
         public void RemoveDiedSoldiers()
         {
-            for (int i = 0; i < _soldiersList.Count; i++)
+            int soldiersNumber = _soldiersList.Count;
+
+            for (int i = 0; i < soldiersNumber; i++)
             {
                 if (_soldiersList[i].Health == 0)
                 {
                     _soldiersList.Remove(_soldiersList[i]);
+                    soldiersNumber--;
+                    i--;
                 }
             }
         }
