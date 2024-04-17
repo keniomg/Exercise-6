@@ -74,19 +74,6 @@ namespace OopTask10
             Console.WriteLine("Вы вышли из программы...");
         }
 
-        public void CountAliveSoldiers(Platoon platoon, out int aliveSoldiers)
-        {
-            aliveSoldiers = 0;
-
-            for (int i = 0; i < platoon.GetSoldiersList().Count; i++)
-            {
-                if (platoon.GetSoldiersList()[i].Health > 0)
-                {
-                    aliveSoldiers++;
-                }
-            }
-        }
-
         private List<Soldier> FormSoldiersList()
         {
             int minimumSoldiersNumber = 7;
@@ -116,17 +103,13 @@ namespace OopTask10
 
         private void StartBattle()
         {
-            Platoon firstPlatoon = new Platoon(FormSoldiersList());
-            Platoon secondPlatoon = new Platoon(FormSoldiersList());
+            Platoon firstPlatoon = new Platoon(FormSoldiersList(), "1");
+            Platoon secondPlatoon = new Platoon(FormSoldiersList(), "2");
 
             while (firstPlatoon.GetSoldiersList().Count > 0 && secondPlatoon.GetSoldiersList().Count > 0)
             {
-                Console.WriteLine("Первый взвод атакует второй взвод!\n");
-                firstPlatoon.Attack(secondPlatoon);
-                UserInterface.ShowPressAnyKeyForContinueMessage();
-                Console.WriteLine("Второй взвод атакует первый взвод!\n");
-                secondPlatoon.Attack(firstPlatoon);
-                UserInterface.ShowPressAnyKeyForContinueMessage();
+                firstPlatoon.Battle(secondPlatoon);
+                secondPlatoon.Battle(firstPlatoon);
                 firstPlatoon.RemoveDiedSoldiers();
                 secondPlatoon.RemoveDiedSoldiers();
             }
@@ -155,10 +138,13 @@ namespace OopTask10
     {
         private List<Soldier> _soldiersList = new List<Soldier>();
 
-        public Platoon(List<Soldier> soldiersList)
+        public Platoon(List<Soldier> soldiersList, string number)
         {
             _soldiersList = soldiersList;
+            Number = number;
         }
+
+        public string Number { get; private set; }
 
         public List<Soldier> GetSoldiersList()
         {
@@ -168,11 +154,10 @@ namespace OopTask10
         public void Attack(Platoon platoon)
         {
             int attackingSoldierNumber = 0;
-            War war = new War();
 
             foreach (Soldier soldier in _soldiersList)
             {
-                war.CountAliveSoldiers(platoon, out int aliveSoldiers);
+                platoon.CountAliveSoldiers(out int aliveSoldiers);
 
                 if (aliveSoldiers > 0)
                 {
@@ -197,6 +182,26 @@ namespace OopTask10
                 }
             }
         }
+
+        public void Battle(Platoon platoon)
+        {
+            Console.WriteLine($"Взвод {Number} атакует взвод {platoon.Number}!\n");
+            Attack(platoon);
+            UserInterface.ShowPressAnyKeyForContinueMessage();
+        }
+
+        public void CountAliveSoldiers(out int aliveSoldiers)
+        {
+            aliveSoldiers = 0;
+
+            for (int i = 0; i < _soldiersList.Count; i++)
+            {
+                if (_soldiersList[i].Health > 0)
+                {
+                    aliveSoldiers++;
+                }
+            }
+        }
     }
 
     public class Soldier
@@ -209,9 +214,9 @@ namespace OopTask10
             Type = "обычный солдат";
         }
 
-        public int Health { get; protected set; }
-        public int Armor { get; protected set; }
-        public int Damage { get; protected set; }
+        public int Health { get; private set; }
+        public int Armor { get; private set; }
+        public int Damage { get; private set; }
         public string Type {  get; protected set; }
 
         public virtual void Attack(Platoon attackedPlatoon)
@@ -226,16 +231,14 @@ namespace OopTask10
                 if (attackedSoldiersList[attackedSoldierIndex].Health > 0)
                 {
                     int makedDamage = Damage - attackedSoldiersList[attackedSoldierIndex].Armor;
-                    MakeDamage(attackedSoldierIndex, attackedSoldiersList, makedDamage, out Soldier diedSoldier);
+                    MakeDamage(attackedSoldierIndex, attackedSoldiersList, makedDamage);
                     isAttackPerformed = true;
                 }
             }
         }
 
-        public virtual void MakeDamage(int attackedEnemyIndex, List<Soldier> soldiers, int makedDamage, out Soldier diedSoldier)
+        public virtual void MakeDamage(int attackedEnemyIndex, List<Soldier> soldiers, int makedDamage)
         {
-            diedSoldier = null;
-
             if (soldiers[attackedEnemyIndex].Health > 0)
             {
                 soldiers[attackedEnemyIndex].TakeDamage(makedDamage);
@@ -249,15 +252,13 @@ namespace OopTask10
                 }
                 else
                 {
-                    soldiers[attackedEnemyIndex].Health = 0;
                     Console.WriteLine($"{Type} атакует солдата противника под номером {attackedEnemyNumber} типа '{soldiers[attackedEnemyIndex].Type}'" +
                         $"\nи убивает его!\n");
-                    diedSoldier = soldiers[attackedEnemyIndex];
                 }
             }
         }
 
-        private void TakeDamage(int takedDamage)
+        public void TakeDamage(int takedDamage)
         {
             Health -= takedDamage;
 
@@ -288,8 +289,7 @@ namespace OopTask10
             int attackedEmemiesNumber = 3;
             int attackedEnemyIndex;
             List<Soldier> attackedSoldiersList = attackedPlatoon.GetSoldiersList();
-            War war = new War();
-            war.CountAliveSoldiers(attackedPlatoon, out int aliveSoldiers);
+            attackedPlatoon.CountAliveSoldiers(out int aliveSoldiers);
 
             if (attackedEmemiesNumber > aliveSoldiers)
             {
@@ -308,7 +308,7 @@ namespace OopTask10
                     {
                         attackedEnemiesIndexes.Add(attackedEnemyIndex);
                         int makedDamage = Damage - attackedSoldiersList[attackedEnemyIndex].Armor;
-                        MakeDamage(attackedEnemyIndex, attackedSoldiersList, makedDamage, out Soldier diedSoldier);
+                        MakeDamage(attackedEnemyIndex, attackedSoldiersList, makedDamage);
                     }
                     else
                     {
@@ -335,6 +335,8 @@ namespace OopTask10
             int attacksNumber = 3;
             int attackedEnemyIndex;
             List<Soldier> attackedSoldiersList = attackedPlatoon.GetSoldiersList();
+            War war = new War();
+            List<int> diedSoldiersIndexesList = new List<int>();
 
             for (int i = 0; i < attacksNumber; i++)
             {
@@ -343,7 +345,16 @@ namespace OopTask10
 
                 if (attackedSoldiersList[attackedEnemyIndex].Health > 0)
                 {
-                    MakeDamage(attackedEnemyIndex, attackedSoldiersList, makedDamage, out Soldier diedSoldier);
+                    MakeDamage(attackedEnemyIndex, attackedSoldiersList, makedDamage);
+                }
+                else
+                {
+                    attackedPlatoon.CountAliveSoldiers(out int aliveSoldiers);
+                    
+                    if (aliveSoldiers > 0)
+                    {
+                        i--;
+                    }
                 }
             }
         }
