@@ -16,21 +16,22 @@ namespace OopTask12
 
     public class UserUtils
     {
-        private static Random _random = new Random();
+        private static Random s_random = new Random();
 
         public static int GetRandomNumber(int minimumValue, int maximumValue)
         {
-            return _random.Next(minimumValue, maximumValue);
+            return s_random.Next(minimumValue, maximumValue);
         }
     }
 
     public class Zoo
     {
         private bool _isContinue;
+        private List<Animal> _animalsTypes;
 
         public Zoo() 
         {
-            AnimalsTypes = new List<Animal>
+            _animalsTypes = new List<Animal>
             {
                 new Animal("Шимпанзе", "Крик", "Мужской"),
                 new Animal("Лев", "Рык", "Мужской"),
@@ -40,8 +41,6 @@ namespace OopTask12
                 new Animal("Ворона", "Карканье", "Мужской")
             };
         }
-
-        public List<Animal> AnimalsTypes { get; private set; }
 
         public void Initialize()
         {
@@ -53,6 +52,7 @@ namespace OopTask12
 
             while (_isContinue)
             {
+                Console.Clear();
                 Console.WriteLine($"Вы можете выбрать одну из следующих команд:\n\n" +
                     $"{CommandShowAviaries} - подойти к одному из вольеров\n" +
                     $"{CommandExit} - выйти из программы\n");
@@ -66,7 +66,7 @@ namespace OopTask12
                         break;
 
                     case CommandExit:
-                        _isContinue = Exit();
+                        _isContinue = false;
                         break;
 
                     default:
@@ -74,15 +74,12 @@ namespace OopTask12
                         break;
                 }
 
+                Console.WriteLine("Для продолжения нажмите любую клавишу");
                 Console.ReadKey();
-                Console.Clear();
             }
-        }
 
-        public bool Exit()
-        {
+            Console.Clear();
             Console.WriteLine("Вы вышли из программы");
-            return false;
         }
 
         private void GoToAviary(List<Aviary> aviariesList)
@@ -93,8 +90,6 @@ namespace OopTask12
             {
                 choosedAviary.ShowInfo();
             }
-
-            Console.WriteLine("Для продолжения нажмите любую клавишу");
         }
 
         private Aviary ChooseAviary(List<Aviary> aviariesList)
@@ -138,9 +133,9 @@ namespace OopTask12
             for (int i = 0; i < aviariesNumber; i++)
             {
                 int animalsNumber = GetRandomNumber(minimumAnimalsNumber, maximumAnimalsNumber);
-                int animalTypeIndex = GetRandomNumber(0, AnimalsTypes.Count);
+                int animalTypeIndex = GetRandomNumber(0, _animalsTypes.Count);
                 int aviaryNumber = i + 1;
-                aviariesList.Add(new Aviary(animalsNumber, aviaryNumber, AnimalsTypes[animalTypeIndex]));
+                aviariesList.Add(new Aviary(animalsNumber, aviaryNumber, _animalsTypes[animalTypeIndex]));
             }
 
             return aviariesList;
