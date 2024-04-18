@@ -1,0 +1,168 @@
+using System;
+using System.Collections.Generic;
+using static OopTask12.UserUtils;
+
+namespace OopTask12
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    public class UserUtils
+    {
+        private static Random _random;
+
+        public static int GetRandomNumber(int minimumValue, int maximumValue)
+        {
+            return _random.Next(minimumValue, maximumValue);
+        }
+    }
+
+    public class Zoo
+    {
+        public void Initialize()
+        {
+            const string CommandShowAviaries = "1";
+            const string CommandExit = "2";
+
+            bool isContinue = true;
+            List<Aviary> aviariesList = FormAviariesList();
+
+            while (isContinue)
+            {
+                Console.WriteLine($"Вы можете выбрать одну из следующих команд:\n\n" +
+                    $"{CommandShowAviaries} - подойти к одному из вольеров\n" +
+                    $"{CommandExit} - выйти из программы\n\n");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case CommandShowAviaries:
+                        break;
+
+                    case CommandExit:
+                        isContinue = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.WriteLine("Для продолжения нажмите любую клавишу");
+                Console.ReadKey();
+            }
+        }
+
+        private void GoToAviary(List<Aviary> aviariesList)
+        {
+            ChooseAviary(aviariesList).ShowInfo();
+        }
+
+        private Aviary ChooseAviary(List<Aviary> aviariesList)
+        {
+            Console.WriteLine("Выберите номер одного из следующих вольеров:");
+
+            for (int i = 0; i < aviariesList.Count; i++)
+            {
+                Console.WriteLine($"Вольер номер {aviariesList[i].Number}");
+            }
+
+            Console.WriteLine();
+            string userInput = Console.ReadLine();
+
+            if (int.TryParse(userInput, out int aviaryNumber) == false)
+            {
+                Console.WriteLine("Введено не число");
+                return null;
+            }
+
+            if (aviaryNumber == 0 || aviaryNumber > aviariesList.Count)
+            {
+                Console.WriteLine("Номер введён неверно");
+                return null;
+            }
+
+            int aviaryIndex = aviaryNumber - 1;
+            return aviariesList[aviaryIndex];
+        }
+
+        private List<Aviary> FormAviariesList()
+        {
+            List<string> aviaryTypes = new List<string>()
+            {
+                "малый",
+                "средний",
+                "большой"
+            };
+            List<string>
+            int minimumAviariesNumber = 4;
+            int maximumAviariesNumber = 7;
+            int aviariesNumber = GetRandomNumber(minimumAviariesNumber, maximumAviariesNumber);
+            List<Aviary> aviariesList = new List<Aviary>();
+            int minimumAnimalsNumber = 5;
+            int maximumAnimalsNumber = 11;
+
+            for (int i = 0; i < aviariesNumber; i++)
+            {
+                int animalsNumber = GetRandomNumber(minimumAnimalsNumber, maximumAnimalsNumber);
+                int aviaryTypeIndex = GetRandomNumber(0, aviaryTypes.Count);
+                int aviaryNumber = i + 1;
+                aviariesList.Add(new Aviary(animalsNumber, aviaryTypes[aviaryTypeIndex], aviaryNumber));
+            }
+
+            return aviariesList;
+        }
+    }
+
+    public class Aviary
+    {
+        private int _animalsNumber;
+        private string _type;
+        private Animal _animal;
+
+        public Aviary(int animalsNumber, string type, int number, Animal animal)
+        {
+            _animalsNumber = animalsNumber;
+            _type = type;
+            Number = number;
+            _animal = animal;
+        }
+
+        public int Number { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"В данном вольере обитает животных: {_animalsNumber}, тип вольера: {_type}\n");
+            _animal.ShowInfo();
+        }
+    }
+
+    public class Animal
+    {
+        public Animal(string type, string sound, string sex)
+        {
+            Type = type;
+            Sound = sound;
+            _sex = sex;
+        }
+
+        public string Type { get; protected set; }
+        public string Sound
+        private string _sex;
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"Вид животного: {Type}, издаваемый звук: {Sound}, пол животного {_sex}");
+        }
+    }
+
+    public class Monkey : Animal
+    {
+
+    }
+}
