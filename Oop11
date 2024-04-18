@@ -15,12 +15,7 @@ namespace OopTask11
 
     public class UserUtils
     {
-        private static Random _random = new Random();
-
-        public static int GetRandomNumber(int minimumRandomValue, int maximumRandomValue)
-        {
-            return _random.Next(minimumRandomValue, maximumRandomValue);
-        }
+        public static readonly Random s_random = new Random();
     }
 
     public class AquariumAdministratingProgram
@@ -49,7 +44,7 @@ namespace OopTask11
             int minimumMaximumFishNumber = 10;
             int maximumMaximumFishNumber = 20;
             List<Fish> fishList = new List<Fish>();
-            Aquarium aquarium = new Aquarium(GetRandomNumber(minimumMaximumFishNumber, maximumMaximumFishNumber), fishList);
+            Aquarium aquarium = new Aquarium(s_random.Next(minimumMaximumFishNumber, maximumMaximumFishNumber), fishList);
             bool isContinue = true;
 
             while (isContinue)
