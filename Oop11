@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using static OopTask11.UserUtils;
+using System.Linq;
 
 namespace OopTask11
 {
@@ -8,33 +8,23 @@ namespace OopTask11
     {
         static void Main(string[] args)
         {
-            AquariumAdministratingProgram aquariumAdministratingProgram = new AquariumAdministratingProgram();
+            AquariumAdministrateProgram aquariumAdministratingProgram = new AquariumAdministrateProgram();
             aquariumAdministratingProgram.Initialize();
         }
     }
 
     public class UserUtils
     {
-        public static readonly Random s_random = new Random();
+        private static readonly Random s_random = new Random();
+
+        public static int GenerateRandomNumber(int minimumValue, int maximumValue)
+        {
+            return s_random.Next(minimumValue, maximumValue);
+        }
     }
 
-    public class AquariumAdministratingProgram
+    public class AquariumAdministrateProgram
     {
-        private List<Fish> _fishTypesList;
-
-        public Fish GetFishByIndex(int index)
-        {
-            _fishTypesList = new List<Fish>()
-            {
-                new Fish(15, "Angelfish"),
-                new Fish(12, "Goldfish"),
-                new Fish(17, "Guppy"),
-                new Fish(14, "Shuyka"),
-                new Fish(88, "Karas"),
-            };
-            return _fishTypesList[index];
-        }
-
         public void Initialize()
         {
             const string CommandAddFish = "1";
@@ -43,8 +33,7 @@ namespace OopTask11
 
             int minimumMaximumFishNumber = 10;
             int maximumMaximumFishNumber = 20;
-            List<Fish> fishList = new List<Fish>();
-            Aquarium aquarium = new Aquarium(s_random.Next(minimumMaximumFishNumber, maximumMaximumFishNumber), fishList);
+            Aquarium aquarium = new Aquarium(UserUtils.GenerateRandomNumber(minimumMaximumFishNumber, maximumMaximumFishNumber));
             bool isContinue = true;
 
             while (isContinue)
@@ -54,7 +43,7 @@ namespace OopTask11
                     $"{CommandAddFish} - добавить рыбку в аквариум\n\n" +
                     $"{CommandRemoveFish} - удалить рыбку из аквариума\n\n" +
                     $"{CommandExit} - выйти из программы\n\n");
-                Console.SetCursorPosition(0, 15);
+                Console.SetCursorPosition(0, 10);
                 aquarium.ShowInfo();
                 GrowOld(aquarium);
                 Console.SetCursorPosition(0, 8);
@@ -87,13 +76,13 @@ namespace OopTask11
         private void GrowOld(Aquarium aquarium)
         {
             List<Fish> fishList = aquarium.GetFishList();
-            int agingValue = 3;
+            int growOldValue = 3;
             
             if (fishList.Count > 0)
             {
                 for (int i = 0; i < fishList.Count; i++)
                 {
-                    fishList[i].GrowOld(agingValue);
+                    fishList[i].GrowOld(growOldValue);
                 }
             }
         }
@@ -102,22 +91,9 @@ namespace OopTask11
         {
             if (aquarium.GetFishList().Count < aquarium.MaximumFishNumber)
             {
-                _fishTypesList = new List<Fish>()
-                {
-                    new Fish(15, "Angelfish"),
-                    new Fish(12, "Goldfish"),
-                    new Fish(17, "Guppy"),
-                    new Fish(14, "Shuyka"),
-                    new Fish(88, "Karas"),
-                };
+                List<Fish> fishTypesList = aquarium.GetFishTypesList();
                 Console.WriteLine($"Введите номер добавляемого вида рыбы:\n");
-
-                for (int i = 0; i < _fishTypesList.Count; i++)
-                {
-                    int fishNumber = i + 1;
-                    Console.WriteLine($"{fishNumber} - {_fishTypesList[i].GetType()}\n");
-                }
-
+                aquarium.ShowFishTypes();
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
@@ -127,14 +103,14 @@ namespace OopTask11
                     return;
                 }
                 
-                if (addedFishNumber > _fishTypesList.Count || addedFishNumber == 0)
+                if (addedFishNumber > fishTypesList.Count || addedFishNumber <= 0)
                 {
                     Console.WriteLine("Введен неверный номер рыбы");
                     return;
                 }
 
                 int addedFishIndex = addedFishNumber - 1;
-                aquarium.AddFish(_fishTypesList[addedFishIndex]);
+                aquarium.AddFish(fishTypesList[addedFishIndex]);
             }
             else
             {
@@ -178,7 +154,7 @@ namespace OopTask11
                     return;
                 }
 
-                if (removingFishNumber > fishList.Count || removingFishNumber == 0)
+                if (removingFishNumber > fishList.Count || removingFishNumber <= 0)
                 {
                     Console.WriteLine("Введен неверный номер рыбы");
                     return;
@@ -196,18 +172,27 @@ namespace OopTask11
     public class Aquarium
     {
         private List<Fish> _fishList;
+        private List<Fish> _fishTypesList;
 
-        public Aquarium(int maximumFishNumber, List<Fish> fishList)
+        public Aquarium(int maximumFishNumber)
         {
             MaximumFishNumber = maximumFishNumber;
-            _fishList = fishList;
+            _fishList = new List<Fish>();
+            _fishTypesList = new List<Fish>()
+            {
+                new Fish("Angelfish", 30),
+                new Fish("Goldfish", 30),
+                new Fish("Guppy", 45),
+                new Fish("Shuyka", 60),
+                new Fish("Karas", 90),
+            };
         }
 
         public int MaximumFishNumber { get; private set; }
 
         public List<Fish> GetFishList()
         {
-            return _fishList;
+            return _fishList.ToList();
         }
 
         public void AddFish(Fish fish)
@@ -230,34 +215,45 @@ namespace OopTask11
                 Console.WriteLine();
             }
         }
+
+        public void ShowFishTypes()
+        {
+            for (int i = 0; i < _fishTypesList.Count; i++)
+            {
+                int fishNumber = i + 1;
+                Console.WriteLine($"{fishNumber} - {_fishTypesList[i].Type}\n");
+            }
+        }
+
+        public List<Fish> GetFishTypesList()
+        {
+            return _fishTypesList.ToList();
+        }
     }
 
     public class Fish
     {
-        public Fish(int health, string type)
+        private int _maximumAge;
+
+        public Fish(string type, int maximumAge)
         {
-            Health = health;
             Type = type;
+            _maximumAge = maximumAge;
         }
         
-        public int Health { get; private set; }
+        public int Age { get; private set; }
         public string Type { get; private set; }
 
         public void GrowOld(int agingValue)
         {
-            Health -= agingValue;
-        }
-
-        public string GetType()
-        {
-            return Type;
+            Age += agingValue;
         }
 
         public void ShowInfo()
         {
-            if (Health > 0)
+            if (Age < _maximumAge)
             {
-                Console.WriteLine($"Вид рыбки {Type}, Здоровье рыбки {Health}");
+                Console.WriteLine($"Вид рыбки {Type}, возраст рыбки {Age}");
             }
             else
             {
