@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static OopTask12.UserUtils;
 
 namespace OopTask12
@@ -8,12 +9,14 @@ namespace OopTask12
     {
         static void Main(string[] args)
         {
+            Zoo zoo = new Zoo();
+            zoo.Initialize();
         }
     }
 
     public class UserUtils
     {
-        private static Random _random;
+        private static Random _random = new Random();
 
         public static int GetRandomNumber(int minimumValue, int maximumValue)
         {
@@ -23,29 +26,47 @@ namespace OopTask12
 
     public class Zoo
     {
+        private bool _isContinue;
+
+        public Zoo() 
+        {
+            AnimalsTypes = new List<Animal>
+            {
+                new Animal("Шимпанзе", "Крик", "Мужской"),
+                new Animal("Лев", "Рык", "Мужской"),
+                new Animal("Алигатор", "Хлюпающее шипение", "Женский"),
+                new Animal("Собака", "Лай", "Женский"),
+                new Animal("Овца", "Блеяние", "Мужской"),
+                new Animal("Ворона", "Карканье", "Мужской")
+            };
+        }
+
+        public List<Animal> AnimalsTypes { get; private set; }
+
         public void Initialize()
         {
             const string CommandShowAviaries = "1";
             const string CommandExit = "2";
 
-            bool isContinue = true;
+            _isContinue = true;
             List<Aviary> aviariesList = FormAviariesList();
 
-            while (isContinue)
+            while (_isContinue)
             {
                 Console.WriteLine($"Вы можете выбрать одну из следующих команд:\n\n" +
                     $"{CommandShowAviaries} - подойти к одному из вольеров\n" +
-                    $"{CommandExit} - выйти из программы\n\n");
+                    $"{CommandExit} - выйти из программы\n");
                 string userInput = Console.ReadLine();
                 Console.Clear();
 
                 switch (userInput)
                 {
                     case CommandShowAviaries:
+                        GoToAviary(aviariesList);
                         break;
 
                     case CommandExit:
-                        isContinue = false;
+                        _isContinue = Exit();
                         break;
 
                     default:
@@ -53,19 +74,32 @@ namespace OopTask12
                         break;
                 }
 
-                Console.WriteLine("Для продолжения нажмите любую клавишу");
                 Console.ReadKey();
+                Console.Clear();
             }
+        }
+
+        public bool Exit()
+        {
+            Console.WriteLine("Вы вышли из программы");
+            return false;
         }
 
         private void GoToAviary(List<Aviary> aviariesList)
         {
-            ChooseAviary(aviariesList).ShowInfo();
+            Aviary choosedAviary = ChooseAviary(aviariesList);
+
+            if (choosedAviary != null)
+            {
+                choosedAviary.ShowInfo();
+            }
+
+            Console.WriteLine("Для продолжения нажмите любую клавишу");
         }
 
         private Aviary ChooseAviary(List<Aviary> aviariesList)
         {
-            Console.WriteLine("Выберите номер одного из следующих вольеров:");
+            Console.WriteLine("Выберите номер одного из следующих вольеров:\n");
 
             for (int i = 0; i < aviariesList.Count; i++)
             {
@@ -81,25 +115,19 @@ namespace OopTask12
                 return null;
             }
 
-            if (aviaryNumber == 0 || aviaryNumber > aviariesList.Count)
+            if (aviaryNumber <= 0 || aviaryNumber > aviariesList.Count)
             {
                 Console.WriteLine("Номер введён неверно");
                 return null;
             }
 
             int aviaryIndex = aviaryNumber - 1;
+            Console.Clear();
             return aviariesList[aviaryIndex];
         }
 
         private List<Aviary> FormAviariesList()
         {
-            List<string> aviaryTypes = new List<string>()
-            {
-                "малый",
-                "средний",
-                "большой"
-            };
-            List<string>
             int minimumAviariesNumber = 4;
             int maximumAviariesNumber = 7;
             int aviariesNumber = GetRandomNumber(minimumAviariesNumber, maximumAviariesNumber);
@@ -110,9 +138,9 @@ namespace OopTask12
             for (int i = 0; i < aviariesNumber; i++)
             {
                 int animalsNumber = GetRandomNumber(minimumAnimalsNumber, maximumAnimalsNumber);
-                int aviaryTypeIndex = GetRandomNumber(0, aviaryTypes.Count);
+                int animalTypeIndex = GetRandomNumber(0, AnimalsTypes.Count);
                 int aviaryNumber = i + 1;
-                aviariesList.Add(new Aviary(animalsNumber, aviaryTypes[aviaryTypeIndex], aviaryNumber));
+                aviariesList.Add(new Aviary(animalsNumber, aviaryNumber, AnimalsTypes[animalTypeIndex]));
             }
 
             return aviariesList;
@@ -122,13 +150,11 @@ namespace OopTask12
     public class Aviary
     {
         private int _animalsNumber;
-        private string _type;
         private Animal _animal;
 
-        public Aviary(int animalsNumber, string type, int number, Animal animal)
+        public Aviary(int animalsNumber, int number, Animal animal)
         {
             _animalsNumber = animalsNumber;
-            _type = type;
             Number = number;
             _animal = animal;
         }
@@ -137,8 +163,11 @@ namespace OopTask12
 
         public void ShowInfo()
         {
-            Console.WriteLine($"В данном вольере обитает животных: {_animalsNumber}, тип вольера: {_type}\n");
-            _animal.ShowInfo();
+            Console.WriteLine($"Номер вольера: {Number}" +
+                $"\nВ данном вольере обитает вид животных: {_animal.Type}" +
+                $"\nКоличество животных: {_animalsNumber}" +
+                $"\nПол животных: {_animal.Sex}" +
+                $"\nИздаваемый звук: {_animal.Sound}\n");
         }
     }
 
@@ -148,21 +177,11 @@ namespace OopTask12
         {
             Type = type;
             Sound = sound;
-            _sex = sex;
+            Sex = sex;
         }
 
-        public string Type { get; protected set; }
-        public string Sound
-        private string _sex;
-
-        public void ShowInfo()
-        {
-            Console.WriteLine($"Вид животного: {Type}, издаваемый звук: {Sound}, пол животного {_sex}");
-        }
-    }
-
-    public class Monkey : Animal
-    {
-
+        public string Type { get; private set; }
+        public string Sound { get; private set; }
+        public string Sex { get; private set; }
     }
 }
