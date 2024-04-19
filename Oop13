@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OopTask13;
+using static OopTask13.UserUtils;
 
 namespace OopTask13
 {
@@ -11,158 +9,279 @@ namespace OopTask13
     {
         static void Main(string[] args)
         {
+            CarService carService = new CarService(10000, 500);
+            carService.Administrate();
         }
     }
-    
-	public class UserUtils
-	{
+
+    public class UserUtils
+    {
         public static Random s_random = new Random();
-		
-		public static int GetRandomNumber(int minRandomValue, int maxRandomValue)
-		{
+
+        public static int GetRandomNumber(int minRandomValue, int maxRandomValue)
+        {
             return s_random.Next(minRandomValue, maxRandomValue);
         }
     }
-	
+
     public class CarService
     {
         private int _money;
-		private List<Detail> _detailsTypes;
-		private List<Detail> _detailsStockList;
-		
-		public CarService(int money)
-		{
+        private int _servicePrice;
+        private List<Detail> _detailsTypes;
+        private List<Detail> _detailsStockList;
+
+        public CarService(int money, int servicePrice)
+        {
             _detailsTypes = new List<Detail>()
-			{
+            {
                 new Detail("подшипник", 1000, true),
-				new Detail("руль", 3500, true),
-				new Detail("граната", 1500, true),
-				new Detail("тормозные колодки", 1000, true),
-				new Detail("рессоры", 1200, true)            
-			};
+                new Detail("руль", 3500, true),
+                new Detail("граната", 1500, true),
+                new Detail("тормозные колодки", 1000, true),
+                new Detail("рессоры", 1200, true)
+            };
             _money = money;
-			_detailsStockList = new List<Detail>();
+            _detailsStockList = new List<Detail>();
+            _servicePrice = servicePrice;
         }
-		
-		public void RepairCar(Car car)
-		{
-            Console.WriteLine("Введите номер детали для замены:\n");
-			string userInput = Console.ReadLine();
-			
-			if(int.TryParse(userInput, out int detailNumber) == false)
-			{
-                Console.WriteLine("Введено не число");
-				return;
-            }
-			
-			if(detailNumber <= 0 || detailNumber > car.DetailsList.Count)
-			{
-                Console.WriteLine("Номер детали введен неверно");
-				return;
+
+        public void Administrate()
+        {
+            const string CommandServiceCar = "1";
+            const string CommandExit = "2";
+
+            FormDetailsStock();
+            bool isServiceWorking = true;
+
+            while (isServiceWorking)
+            {
+                Console.WriteLine($"Вы можете выполнить одну из следующих операций:\n" +
+                    $"{CommandServiceCar} - обслужить автомобиль\n" +
+                    $"{CommandExit} - выйти из программы");
+                string userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case CommandServiceCar:
+                        ServiceCar(ref isServiceWorking);
+                        break;
+
+                    case CommandExit:
+                        isServiceWorking = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.WriteLine("Вы вышли из программы");
             }
         }
-		
-		public void ServiceCar()
-		{
+
+        private void ServiceCar(ref bool isServiceWorking)
+        {
             const string CommandRepairCar = "1";
-			const string CommandCancelRepairCar = "2";
-			
-			Car car = new Car(GetCarDetailsList());
-			car.ShowInfo();
-			ShowStockInfo();
-			Console.WriteLine("Вы можете выполнить одну из следующих операций:");
-			
-			
-			
-		
-        }
-        
-		private void ShowStockInfo()
-		{
-            if(_detailsStockList.Count == 0)
-			{
-                Console.WriteLine("\nСклад пуст");
+            const string CommandCancelRepairCar = "2";
+
+            bool isRepairStarted = false;
+            bool isContinue = true;
+            int unsuitableDetailsNumber;
+            Car car = new Car(GetCarDetailsList(out unsuitableDetailsNumber));
+
+            while (isContinue)
+            {
+                Console.WriteLine($"Вы можете выполнить одну из следующих операций:\n" +
+                    $"{CommandRepairCar} - произвести ремонт автомобиля\n" +
+                    $"{CommandCancelRepairCar} - отказаться от ремонта автомобиля");
+                Console.SetCursorPosition(0, 9);
+                car.ShowInfo();
+                ShowStockInfo();
+                Console.WriteLine($"\nДеньги автосервиса: {_money}");
+                Console.SetCursorPosition(0, 7);
+                string userInput = Console.ReadLine();
+
+                switch (userInput)
+                {
+                    case CommandRepairCar:
+                        RepairCar(car, ref isRepairStarted, ref unsuitableDetailsNumber, ref isContinue);
+                        break; 
+                
+                    case CommandCancelRepairCar:
+                        CancelRepairCar(car, isRepairStarted, ref isContinue, ref isServiceWorking);
+                        break;
+
+                    default:
+                        Console.WriteLine("Введена неверная команда");
+                        break;
+                }
+
+                Console.WriteLine("Для продолжения нажмите любую клавишу");
+                Console.ReadKey();
+                Console.Clear();
             }
-			else
-			{
-                Console.WriteLine("\nВ данный момент на складе имеются следующие детали:\n");
-				int detailsNumber = 0;
-				
-                for (i = 0; i < _detailsTypes.Count; i++)
-				{
-                    Console.WriteLine($"'{_detailsTypes[i].Name}' в количестве: ")
-					
-					for(j = 0; j < _detailsStockList.Count; j++)
-					{
-                        if(_detailsTypes[i].Name == _detailsStockList[j].Name)
-						{
-                            detailsNumber++;
-                        }
+        }
+
+        private void CancelRepairCar(Car car, bool isRepairStarted, ref bool isContinue, ref bool isServiceWorking)
+        {
+            int fineForDetails = 0;
+            int fixedFine = 100;
+
+            if (isRepairStarted)
+            {
+                for (int i = 0; i < car.DetailsList.Count; i++)
+                {
+                    if (car.DetailsList[i].IsDetailSuitable == false)
+                    {
+                        fineForDetails += car.DetailsList[i].Cost;
                     }
-					
-					Console.Write(detailNumber);
+                }
+            }
+
+            int totalFine = fineForDetails + fixedFine;
+            Console.WriteLine($"Вы отказались от ремонта автомобиля, штраф составит: {totalFine}\nваши деньги - {_money}\n");
+
+            if (totalFine > _money)
+            {
+                Console.WriteLine("Автосервис закрывается из-за недостатка денег для выплаты штрафа");
+                isServiceWorking = false;
+            }
+            else
+            {
+                _money -= totalFine;
+            }
+
+            isContinue = false;
+        }
+
+        private void RepairCar(Car car, ref bool isRepairStarted, ref int unsuitableDetailsNumber, ref bool isContinue)
+        {
+            Console.WriteLine("Введите номер детали для замены:\n");
+            string userInput = Console.ReadLine();
+
+            if (int.TryParse(userInput, out int detailNumber) == false)
+            {
+                Console.WriteLine("Введено не число");
+                return;
+            }
+
+            if (detailNumber <= 0 || detailNumber > car.DetailsList.Count)
+            {
+                Console.WriteLine("Номер детали введен неверно");
+                return;
+            }
+
+            int detailIndex = detailNumber - 1;
+
+            if (_detailsStockList.Contains(car.DetailsList[detailIndex]) == false)
+            {
+                Console.WriteLine("На складе нет подходящей детали");
+                return;
+            }
+            else
+            {
+                car.DetailsList[detailIndex].ChangeSuitableStatusToTrue();
+                _money += car.DetailsList[detailIndex].Cost + _servicePrice;
+                isRepairStarted = true;
+                unsuitableDetailsNumber--;
+
+
+                if (unsuitableDetailsNumber == 0)
+                {
+                    isContinue = false;
+                    Console.WriteLine("Отремонтированы все детали в автомобиле");
                 }
             }
         }
-		
+
+        private void ShowStockInfo()
+        {
+            if (_detailsStockList.Count == 0)
+            {
+                Console.WriteLine("\nСклад пуст");
+            }
+            else
+            {
+                Console.WriteLine("\nВ данный момент на складе имеются следующие детали:\n");
+                int detailsNumber = 0;
+
+                for (int i = 0; i < _detailsTypes.Count; i++)
+                {
+                    Console.WriteLine($"\n'{_detailsTypes[i].Name}' в количестве: ");
+
+                    for (int j = 0; j < _detailsStockList.Count; j++)
+                    {
+                        if (_detailsTypes[i].Name == _detailsStockList[j].Name)
+                        {
+                            detailsNumber++;
+                        }
+                    }
+
+                    Console.Write(detailsNumber + "\n");
+                }
+            }
+        }
+
         private void FormDetailsStock()
-		{
+        {
             int minDetailsAtStockNumber = 1;
-			int maxDetailsAtStockNumber = 11;
-			
-			for (i = 0; i < _detailsTypes.Count; i++)
-			{
+            int maxDetailsAtStockNumber = 11;
+
+            for (int i = 0; i < _detailsTypes.Count; i++)
+            {
                 int detailsAtStockNumber = UserUtils.GetRandomNumber(minDetailsAtStockNumber, maxDetailsAtStockNumber);
-				
-				for (j = 0; j < detailsAtStockNumber; j++)
-				{
+
+                for (int j = 0; j < detailsAtStockNumber; j++)
+                {
                     _detailsStockList.Add(_detailsTypes[i]);
                 }
             }
         }
 
-		private List<Detail> GetCarDetailsList()
-		{
+        private List<Detail> GetCarDetailsList(out int unsuitableDetailsNumber)
+        {
             List<Detail> carDetailsList = _detailsTypes.ToList();
-			int minUnsuitableDetailsNumber = 1;
-			int maxUnsuitableDetailsNumber = carDetailsList.Count;
-			int unsuitableDetailsNumber = UserUtils.GetRandomNumber(minUnsuitableDetailsNumber, maxUnsuitableDetailsNumber);
-			int minDetailIndex = 0;
-			int maxDetailIndex = carDetailsList.Count;
-			
-		    for(i = 0; i < unsuitableDetailsNumber; i++)
-			{
+            int minUnsuitableDetailsNumber = 1;
+            int maxUnsuitableDetailsNumber = carDetailsList.Count;
+            unsuitableDetailsNumber = UserUtils.GetRandomNumber(minUnsuitableDetailsNumber, maxUnsuitableDetailsNumber);
+            int minDetailIndex = 0;
+            int maxDetailIndex = carDetailsList.Count;
+
+            for (int i = 0; i < unsuitableDetailsNumber; i++)
+            {
                 int detailIndex = UserUtils.GetRandomNumber(minDetailIndex, maxDetailIndex);
-				
-				if(carDetailsList[i].IsDetailSuitable = true)
-				{
+
+                if (carDetailsList[detailIndex].IsDetailSuitable == true)
+                {
                     carDetailsList[i].ChangeSuitableStatusToFalse();
                 }
-				else
-				{
+                else
+                {
                     i--;
                 }
             }
-			
-			return carDetailsList;
+
+            return carDetailsList;
         }
     }
 
     public class Car
     {
         public Car(List<Detail> detailsList)
-		{	
-			DetailsList = detailsList;
+        {
+            DetailsList = detailsList;
         }
-		
-		public List<Detail> DetailsList {get; private set; }
-		
-		public void ShowInfo()
-		{
-            Console.WriteLine("Информация о состоянии деталей в данной машине:\n")
-				
-            for (i = 0; i < DetailsList.Count; i++)
-			{
+
+        public List<Detail> DetailsList { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine("Информация о состоянии деталей в данной машине:\n");
+
+            for (int i = 0; i < DetailsList.Count; i++)
+            {
                 DetailsList[i].ShowInfo();
             }
         }
@@ -170,36 +289,36 @@ namespace OopTask13
 
     public class Detail
     {
-        public Detail(string name, int cost,bool isDetailSuitable)
+        public Detail(string name, int cost, bool isDetailSuitable)
         {
             Name = name;
             Cost = cost;
-		    IsDetailSuitable = isDetailSuitable;
+            IsDetailSuitable = isDetailSuitable;
         }
 
         public string Name { get; private set; }
-        public string Status { get; private set;}
+        public string Status { get; private set; }
         public int Cost { get; private set; }
-		public bool IsDetailSuitable {get; private set; }
-		
-		public void ChangeSuitableStatusToFalse()
-		{
+        public bool IsDetailSuitable { get; private set; }
+
+        public void ChangeSuitableStatusToFalse()
+        {
             IsDetailSuitable = false;
         }
-		
-		public void ChangeSuitableStatusToTrue()
-		{
+
+        public void ChangeSuitableStatusToTrue()
+        {
             IsDetailSuitable = true;
         }
-		
-		public void ShowInfo()
-		{
-            if(IsDetailSuitable = true)
-			{	
+
+        public void ShowInfo()
+        {
+            if (IsDetailSuitable == true)
+            {
                 Console.WriteLine($"Деталь '{Name}', стоимость {Cost}, не требует замены");
-			}
-			else
-			{
+            }
+            else
+            {
                 Console.WriteLine($"Деталь '{Name}', стоимость {Cost}, требует замены");
             }
         }
