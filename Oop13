@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace OopTask13
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    public class CarService
+    {
+
+    }
+
+    public class Car
+    {
+
+    }
+
+    public class Detail
+    {
+        public Detail(string name, string status, int cost)
+        {
+            Name = name;
+            Status = status;
+            Cost = cost;
+        }
+
+        public string Name { get; private set; }
+        public string Status { get; private set;}
+        public int Cost { get; private set; }
+    }
+}
