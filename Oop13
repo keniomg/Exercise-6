@@ -83,8 +83,8 @@ namespace OopTask13
 
             bool isRepairStarted = false;
             bool isContinue = true;
-            int unsuitableDetailsNumber;
-            Car car = new Car(GetCarDetailsList(out unsuitableDetailsNumber));
+            int brokenDetailsNumber;
+            Car car = new Car(GetCarDetailsList(out brokenDetailsNumber));
 
             while (isContinue)
             {
@@ -101,7 +101,7 @@ namespace OopTask13
                 switch (userInput)
                 {
                     case CommandRepairCar:
-                        RepairCar(car, ref isRepairStarted, ref unsuitableDetailsNumber, ref isContinue);
+                        car.Repair(ref isRepairStarted, ref brokenDetailsNumber, ref isContinue, ref _detailsStockList, _servicePrice, ref _money);
                         break; 
                 
                     case CommandCancelRepairCar:
@@ -130,9 +130,9 @@ namespace OopTask13
 
                 for (int i = 0; i < car.DetailsList.Count; i++)
                 {
-                    if (car.DetailsList[i].IsDetailSuitable == false)
+                    if (car._detailsList[i].IsBroken)
                     {
-                        fineForDetails += car.DetailsList[i].Cost;
+                        fineForDetails += car._detailsList[i].Cost;
                     }
                 }
             }
@@ -152,79 +152,6 @@ namespace OopTask13
             }
 
             isContinue = false;
-        }
-
-        private void RepairCar(Car car, ref bool isRepairStarted, ref int unsuitableDetailsNumber, ref bool isContinue)
-        {
-            Console.WriteLine("Введите номер детали для замены:\n");
-            string userInput = Console.ReadLine();
-
-            if (int.TryParse(userInput, out int detailNumber) == false)
-            {
-                Console.WriteLine("Введено не число");
-                return;
-            }
-
-            if (detailNumber <= 0 || detailNumber > car.DetailsList.Count)
-            {
-                Console.WriteLine("Номер детали введен неверно");
-                return;
-            }
-
-            int detailIndex = detailNumber - 1;
-
-            if (TrySearchDetail(detailIndex, _detailsStockList, car.DetailsList) == false)
-            {
-                Console.WriteLine("На складе нет подходящей детали");
-                return;
-            }
-            else
-            {
-                Detail replacementDetail = null;
-                int repairPrice = car.DetailsList[detailIndex].Cost + _servicePrice;
-
-                for (int i = 0; i < _detailsStockList.Count; i++)
-                {
-                    if (_detailsStockList[i].Name == car.DetailsList[detailIndex].Name)
-                    {
-                        if (car.DetailsList[detailIndex].IsDetailSuitable == false)
-                        {
-                            unsuitableDetailsNumber--;
-                        }
-                        else
-                        {
-                            repairPrice = 0;
-                        }
-
-                        replacementDetail = _detailsStockList[i];
-                        _detailsStockList.Remove(_detailsStockList[i]);
-                        break;
-                    }
-                }
-
-                car.DetailsList[detailIndex] = replacementDetail;
-                _money += repairPrice;
-                isRepairStarted = true;
-
-                if (unsuitableDetailsNumber == 0)
-                {
-                    isContinue = false;
-                    Console.WriteLine("Отремонтированы все детали в автомобиле");
-                }
-            }
-        }
-
-        private bool TrySearchDetail(int detailIndex, List<Detail> detailsStockList, List<Detail> carDetailsList)
-        {
-            for (int i = 0; i < detailsStockList.Count; i++)
-            {
-                if (detailsStockList[i].Name == carDetailsList[detailIndex].Name)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private void ShowStockInfo()
@@ -309,9 +236,9 @@ namespace OopTask13
             {
                 int detailIndex = GetRandomNumber(minDetailIndex, maxDetailIndex);
 
-                if (carDetailsList[detailIndex].IsDetailSuitable == true)
+                if (carDetailsList[detailIndex].IsBroken == false)
                 {
-                    carDetailsList[detailIndex].MakeUnsuitable();
+                    carDetailsList[detailIndex].Break();
                 }
                 else
                 {
@@ -325,22 +252,105 @@ namespace OopTask13
 
     public class Car
     {
+        private List<Detail> _detailsList;
         public Car(List<Detail> detailsList)
         {
-            DetailsList = detailsList;
+            _detailsList = detailsList;
         }
 
-        public List<Detail> DetailsList { get; private set; }
+        //public List<Detail> DetailsList { get; private set; }
 
         public void ShowInfo()
         {
             Console.WriteLine("Информация о состоянии деталей в данной машине:\n");
 
-            for (int i = 0; i < DetailsList.Count; i++)
+            for (int i = 0; i < _detailsList.Count; i++)
             {
                 int detailNumber = i + 1;
                 Console.WriteLine($"{detailNumber} - ");
-                DetailsList[i].ShowInfo();
+                _detailsList[i].ShowInfo();
+            }
+        }
+
+        public bool TrySearchDetail(int detailIndex, List<Detail> detailsStockList, List<Detail> carDetailsList)
+        {
+            for (int i = 0; i < detailsStockList.Count; i++)
+            {
+                if (detailsStockList[i].Name == carDetailsList[detailIndex].Name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void Repair(ref bool isRepairStarted, ref int brokenDetailsNumber, ref bool isContinue, ref List<Detail> detailsStockList, int servicePrice, ref int money)
+        {
+            Console.WriteLine("Введите номер детали для замены:\n");
+            string userInput = Console.ReadLine();
+            bool isDetailFound = false;
+
+            if (int.TryParse(userInput, out int detailNumber) == false)
+            {
+                Console.WriteLine("Введено не число");
+                return;
+            }
+
+            if (detailNumber <= 0 || detailNumber > _detailsList.Count)
+            {
+                Console.WriteLine("Номер детали введен неверно");
+                return;
+            }
+
+            int detailIndex = detailNumber - 1;
+
+            for (int i = 0; i < detailsStockList.Count; i++)
+            {
+                if (detailsStockList[i].Name == _detailsList[detailIndex].Name)
+                {
+                    isDetailFound = true;
+                }
+            }
+
+            if (isDetailFound == false)
+            {
+                Console.WriteLine("На складе нет подходящей детали");
+                return;
+            }
+            else
+            {
+                Detail replacementDetail = null;
+                int repairPrice = _detailsList[detailIndex].Cost + servicePrice;
+
+                for (int i = 0; i < detailsStockList.Count; i++)
+                {
+                    if (detailsStockList[i].Name == _detailsList[detailIndex].Name)
+                    {
+                        if (_detailsList[detailIndex].IsBroken)
+                        {
+                            brokenDetailsNumber--;
+                        }
+                        else
+                        {
+                            repairPrice = 0;
+                        }
+
+                        replacementDetail = detailsStockList[i];
+                        detailsStockList.Remove(detailsStockList[i]);
+                        break;
+                    }
+                }
+
+                _detailsList[detailIndex] = replacementDetail;
+                money += repairPrice;
+                isRepairStarted = true;
+
+                if (brokenDetailsNumber == 0)
+                {
+                    isContinue = false;
+                    Console.WriteLine("Отремонтированы все детали в автомобиле");
+                }
             }
         }
     }
@@ -351,22 +361,21 @@ namespace OopTask13
         {
             Name = name;
             Cost = cost;
-            IsDetailSuitable = isDetailSuitable;
+            IsBroken = isDetailSuitable;
         }
 
         public string Name { get; private set; }
-        public string Status { get; private set; }
         public int Cost { get; private set; }
-        public bool IsDetailSuitable { get; private set; }
+        public bool IsBroken { get; private set; }
 
-        public void MakeUnsuitable()
+        public void Break()
         {
-            IsDetailSuitable = false;
+            IsBroken = false;
         }
 
         public void ShowInfo()
         {
-            if (IsDetailSuitable == true)
+            if (IsBroken == false)
             {
                 Console.WriteLine($"Деталь '{Name}', стоимость {Cost}, не требует замены");
             }
