@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using static OopTask13.UserUtils;
 
 namespace OopTask13
@@ -16,7 +15,7 @@ namespace OopTask13
 
     public class UserUtils
     {
-        public static Random s_random = new Random();
+        private static Random s_random = new Random();
 
         public static int GetRandomNumber(int minRandomValue, int maxRandomValue)
         {
@@ -29,9 +28,18 @@ namespace OopTask13
         private int _money;
         private int _servicePrice;
         private List<Detail> _detailsStockList;
+        private List<Detail> _detailsTypes;
 
         public CarService(int money, int servicePrice)
         {
+             _detailsTypes = new List<Detail>()
+            {
+                new Detail("подшипник", 1000, false),
+                new Detail("руль", 3500, false),
+                new Detail("граната", 1500, false),
+                new Detail("тормозные колодки", 1000, false),
+                new Detail("рессоры", 1200, false)
+            };
             _money = money;
             _detailsStockList = new List<Detail>();
             _servicePrice = servicePrice;
@@ -83,8 +91,8 @@ namespace OopTask13
 
             bool isRepairStarted = false;
             bool isContinue = true;
-            int brokenDetailsNumber;
-            Car car = new Car(GetCarDetailsList(out brokenDetailsNumber));
+            Car car = new Car();
+            car.FormDetailsList(out int brokenDetailsNumber, _detailsTypes);
 
             while (isContinue)
             {
@@ -105,7 +113,7 @@ namespace OopTask13
                         break; 
                 
                     case CommandCancelRepairCar:
-                        CancelRepairCar(car, isRepairStarted, ref isContinue, ref isServiceWorking);
+                        car.CancelRepairCar(isRepairStarted, ref isContinue, ref isServiceWorking, ref _money);
                         break;
 
                     default:
@@ -119,41 +127,6 @@ namespace OopTask13
             }
         }
 
-        private void CancelRepairCar(Car car, bool isRepairStarted, ref bool isContinue, ref bool isServiceWorking)
-        {
-            int fineForDetails = 0;
-            int fixedFine = 100;
-
-            if (isRepairStarted)
-            {
-                fixedFine = 0;
-
-                for (int i = 0; i < car.DetailsList.Count; i++)
-                {
-                    if (car._detailsList[i].IsBroken)
-                    {
-                        fineForDetails += car._detailsList[i].Cost;
-                    }
-                }
-            }
-
-            int totalFine = fineForDetails + fixedFine;
-            Console.WriteLine($"Вы отказались от ремонта автомобиля, штраф составит: {totalFine}");
-
-            if (totalFine > _money)
-            {
-                Console.WriteLine("Автосервис закрывается из-за недостатка денег для выплаты штрафа");
-                isServiceWorking = false;
-            }
-            else
-            {
-                _money -= totalFine;
-                Console.WriteLine($"\nваши деньги - {_money}\n");
-            }
-
-            isContinue = false;
-        }
-
         private void ShowStockInfo()
         {
             if (_detailsStockList.Count == 0)
@@ -161,26 +134,16 @@ namespace OopTask13
                 Console.WriteLine("\nСклад пуст");
             }
             else
-            {
-                List<Detail> detailsTypes = new List<Detail>()
-                {
-                    new Detail("подшипник", 1000, true),
-                    new Detail("руль", 3500, true),
-                    new Detail("граната", 1500, true),
-                    new Detail("тормозные колодки", 1000, true),
-                    new Detail("рессоры", 1200, true)
-                };
+            {   
                 Console.WriteLine("\nВ данный момент на складе имеются следующие детали:\n");
-                int detailsNumber = 0;
-
-                for (int i = 0; i < detailsTypes.Count; i++)
+                
+                for (int i = 0; i < _detailsTypes.Count; i++)
                 {
-                    Console.WriteLine($"\n'{detailsTypes[i].Name}' в количестве: ");
-                    detailsNumber = 0;
-
+                    Console.WriteLine($"\n'{_detailsTypes[i].Name}' в количестве: ");
+                    int detailsNumber = 0;
                     for (int j = 0; j < _detailsStockList.Count; j++)
                     {
-                        if (detailsTypes[i].Name == _detailsStockList[j].Name)
+                        if (_detailsTypes[i].Name == _detailsStockList[j].Name)
                         {
                             detailsNumber++;
                         }
@@ -195,70 +158,52 @@ namespace OopTask13
         {
             int minDetailsAtStockNumber = 1;
             int maxDetailsAtStockNumber = 11;
-            List<Detail> detailsTypes = new List<Detail>()
-            {
-                new Detail("подшипник", 1000, true),
-                new Detail("руль", 3500, true),
-                new Detail("граната", 1500, true),
-                new Detail("тормозные колодки", 1000, true),
-                new Detail("рессоры", 1200, true)
-            };
 
-            for (int i = 0; i < detailsTypes.Count; i++)
+            for (int i = 0; i < _detailsTypes.Count; i++)
             {
                 int detailsAtStockNumber = GetRandomNumber(minDetailsAtStockNumber, maxDetailsAtStockNumber);
 
                 for (int j = 0; j < detailsAtStockNumber; j++)
                 {
-                    _detailsStockList.Add(detailsTypes[i]);
+                    _detailsStockList.Add(new Detail(_detailsTypes[i].Name, _detailsTypes[i].Cost, _detailsTypes[i].IsBroken));
                 }
             }
-        }
-
-        private List<Detail> GetCarDetailsList(out int unsuitableDetailsNumber)
-        {
-            List<Detail> detailsTypes = new List<Detail>()
-            {
-                new Detail("подшипник", 1000, true),
-                new Detail("руль", 3500, true),
-                new Detail("граната", 1500, true),
-                new Detail("тормозные колодки", 1000, true),
-                new Detail("рессоры", 1200, true)
-            };
-            List<Detail> carDetailsList = detailsTypes.ToList();
-            int minUnsuitableDetailsNumber = 1;
-            int maxUnsuitableDetailsNumber = carDetailsList.Count;
-            unsuitableDetailsNumber = GetRandomNumber(minUnsuitableDetailsNumber, maxUnsuitableDetailsNumber);
-            int minDetailIndex = 0;
-            int maxDetailIndex = carDetailsList.Count;
-
-            for (int i = 0; i < unsuitableDetailsNumber; i++)
-            {
-                int detailIndex = GetRandomNumber(minDetailIndex, maxDetailIndex);
-
-                if (carDetailsList[detailIndex].IsBroken == false)
-                {
-                    carDetailsList[detailIndex].Break();
-                }
-                else
-                {
-                    i--;
-                }
-            }
-
-            return carDetailsList;
         }
     }
 
     public class Car
     {
         private List<Detail> _detailsList;
-        public Car(List<Detail> detailsList)
-        {
-            _detailsList = detailsList;
-        }
 
-        //public List<Detail> DetailsList { get; private set; }
+        public void FormDetailsList(out int brokenDetailsNumber, List<Detail> detailsTypes)
+        {
+            _detailsList = new List<Detail>(detailsTypes);
+
+            for (int i = 0; i < _detailsList.Count; i++)
+            {
+                _detailsList[i] = new Detail(detailsTypes[i].Name, detailsTypes[i].Cost, detailsTypes[i].IsBroken);
+            }
+
+            int minUnsuitableDetailsNumber = 1;
+            int maxUnsuitableDetailsNumber = _detailsList.Count;
+            brokenDetailsNumber = GetRandomNumber(minUnsuitableDetailsNumber, maxUnsuitableDetailsNumber);
+            int minDetailIndex = 0;
+            int maxDetailIndex = _detailsList.Count;
+
+            for (int i = 0; i < brokenDetailsNumber; i++)
+            {
+                int detailIndex = GetRandomNumber(minDetailIndex, maxDetailIndex);
+
+                if (_detailsList[detailIndex].IsBroken == false)
+                {
+                    _detailsList[detailIndex].Break();
+                }
+                else
+                {
+                    i--;
+                }
+            }
+        }
 
         public void ShowInfo()
         {
@@ -353,15 +298,50 @@ namespace OopTask13
                 }
             }
         }
+
+        public void CancelRepairCar(bool isRepairStarted, ref bool isContinue, ref bool isServiceWorking, ref int money)
+        {
+            int fineForDetails = 0;
+            int fixedFine = 100;
+
+            if (isRepairStarted)
+            {
+                fixedFine = 0;
+
+                for (int i = 0; i < _detailsList.Count; i++)
+                {
+                    if (_detailsList[i].IsBroken)
+                    {
+                        fineForDetails += _detailsList[i].Cost;
+                    }
+                }
+            }
+
+            int totalFine = fineForDetails + fixedFine;
+            Console.WriteLine($"Вы отказались от ремонта автомобиля, штраф составит: {totalFine}");
+
+            if (totalFine > money)
+            {
+                Console.WriteLine("Автосервис закрывается из-за недостатка денег для выплаты штрафа");
+                isServiceWorking = false;
+            }
+            else
+            {
+                money -= totalFine;
+                Console.WriteLine($"\nваши деньги - {money}\n");
+            }
+
+            isContinue = false;
+        }
     }
 
     public class Detail
     {
-        public Detail(string name, int cost, bool isDetailSuitable)
+        public Detail(string name, int cost, bool isDetailBroken)
         {
             Name = name;
             Cost = cost;
-            IsBroken = isDetailSuitable;
+            IsBroken = isDetailBroken;
         }
 
         public string Name { get; private set; }
@@ -370,7 +350,7 @@ namespace OopTask13
 
         public void Break()
         {
-            IsBroken = false;
+            IsBroken = true;
         }
 
         public void ShowInfo()
