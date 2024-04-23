@@ -29,6 +29,7 @@ namespace OopTask13
         private bool _isServiceWorking;
         private int _money;
         private int _servicePrice;
+        private int _fixedFine;
         private List<Detail> _detailsStockList;
         private List<Detail> _detailsTypes;
         private bool _isRepairStarted;
@@ -48,6 +49,7 @@ namespace OopTask13
             _servicePrice = servicePrice;
             _isServiceWorking = true;
             _isRepairStarted = false;
+            _fixedFine = 100;
         }
 
         public void Administrate()
@@ -94,8 +96,7 @@ namespace OopTask13
             const string CommandCancelRepairCar = "2";
 
             bool isContinue = true;
-            Car car = new Car();
-            car.FormDetailsList(_detailsTypes.ToList());
+            Car car = new Car(_detailsTypes.ToList());
             car.BrokeRandomDetails();
             _isRepairStarted = false;
 
@@ -132,8 +133,10 @@ namespace OopTask13
             }
         }
 
-        private bool CheckIsInputedDetailNumberCorrect(Car car, out int detailNumber, string userInput)
+        private bool TryGetCorrectDetailNumber(Car car, out int detailNumber)
         {
+            Console.WriteLine("Введите номер детали для замены:\n");
+            string userInput = Console.ReadLine();
             List <Detail> detailsList = car.GetDetailsList();
 
             if (int.TryParse(userInput, out detailNumber) == false)
@@ -151,16 +154,18 @@ namespace OopTask13
             return true;
         }
 
-        private bool CheckIsDetailFound(int detailNumber, List<Detail> detailsList, out int detailIndex)
+        private bool TryFindDetail(int detailNumber, List<Detail> detailsList, out int detailIndex, out Detail foundDetail)
         {
             detailIndex = detailNumber - 1;
             bool isDetailFound = false;
+            foundDetail = null;
 
             for (int i = 0; i < _detailsStockList.Count; i++)
             {
                 if (_detailsStockList[i].Name == detailsList[detailIndex].Name)
                 {
                     isDetailFound = true;
+                    foundDetail = _detailsStockList[i];
                 }
             }
 
@@ -175,19 +180,22 @@ namespace OopTask13
 
         private void RepairCar(Car car, out bool isContinue)
         {
-            Console.WriteLine("Введите номер детали для замены:\n");
-            string userInput = Console.ReadLine();
             isContinue = true;
 
-            if (CheckIsInputedDetailNumberCorrect(car, out int detailNumber, userInput) == false || CheckIsDetailFound(detailNumber, car.GetDetailsList(), out int detailIndex) == false)
+            if (TryGetCorrectDetailNumber(car, out int detailNumber) == false || TryFindDetail(detailNumber, car.GetDetailsList(), out int detailIndex, out Detail foundDetail) == false)
             {
                 return;
             }
             
-            List<Detail> detailsStockList = _detailsStockList.ToList();
-            int servicePrice = _servicePrice;
-            car.Repair(servicePrice, detailIndex, detailsStockList, out isContinue, out int repairPrice, out Detail replacementDetail);
-            _detailsStockList.Remove(replacementDetail);
+            car.Repair(detailIndex, out isContinue, out bool isReplacedDetailWasBroken, foundDetail);
+            int repairPrice = 0;
+
+            if (isReplacedDetailWasBroken)
+            {
+                repairPrice = foundDetail.Cost + _servicePrice;
+            }
+
+            _detailsStockList.Remove(foundDetail);
             _isRepairStarted = true;
             _money += repairPrice;
         }
@@ -195,7 +203,19 @@ namespace OopTask13
         private void CancelRepairCar(Car car, out bool isContinue)
         {
             bool isRepairStarted = _isRepairStarted;
-            car.CancelRepair(isRepairStarted, out int totalFine);
+            car.CancelRepair(isRepairStarted, out int brokenDetailsCost);
+            int totalFine;
+
+            if (_isRepairStarted)
+            {
+                totalFine = brokenDetailsCost;
+            }
+            else
+            {
+                totalFine = _fixedFine;
+            }
+
+            Console.WriteLine($"Вы отказались от ремонта автомобиля, штраф составит: {totalFine}");
 
             if (totalFine > _money)
             {
@@ -225,6 +245,7 @@ namespace OopTask13
                 {
                     Console.WriteLine($"\n'{_detailsTypes[i].Name}' в количестве: ");
                     int detailsNumber = 0;
+
                     for (int j = 0; j < _detailsStockList.Count; j++)
                     {
                         if (_detailsTypes[i].Name == _detailsStockList[j].Name)
@@ -259,11 +280,11 @@ namespace OopTask13
     {
         private List<Detail> _detailsList;
 
-        public void FormDetailsList(List<Detail> detailsTypes)
+        public Car(List<Detail> detailsTypes)
         {
             _detailsList = new List<Detail>(detailsTypes);
 
-            for (int i = 0; i < _detailsList.Count; i++)
+            for (int i = 0; i<_detailsList.Count; i++)
             {
                 _detailsList[i] = new Detail(detailsTypes[i].Name, detailsTypes[i].Cost, detailsTypes[i].IsBroken);
             }
@@ -321,27 +342,20 @@ namespace OopTask13
             }
         }
 
-        public void Repair(int servicePrice, int detailIndex, List<Detail> detailsStockList, out bool isContinue, out int repairPrice, out Detail replacementDetail)
+        public void Repair(int detailIndex, out bool isContinue, out bool isReplacedDetailWasBroken, Detail detailForReplace)
         {
-            replacementDetail = null;
-            repairPrice = _detailsList[detailIndex].Cost + servicePrice;
+            isReplacedDetailWasBroken = true;
             isContinue = true;
 
-            for (int i = 0; i < detailsStockList.Count; i++)
+            if (detailForReplace.Name == _detailsList[detailIndex].Name)
             {
-                if (detailsStockList[i].Name == _detailsList[detailIndex].Name)
+                if (_detailsList[detailIndex].IsBroken == false)
                 {
-                    if (_detailsList[detailIndex].IsBroken == false)
-                    {
-                        repairPrice = 0;
-                    }
-                    
-                    replacementDetail = detailsStockList[i];
-                    break;
+                    isReplacedDetailWasBroken = false;
                 }
-            }
 
-            _detailsList[detailIndex] = replacementDetail;
+                _detailsList[detailIndex] = detailForReplace;
+            }
 
             if (CalculateBrokenDetailsNumber() == 0)
             {
@@ -350,26 +364,20 @@ namespace OopTask13
             }
         }
 
-        public void CancelRepair(bool isRepairStarted, out int totalFine)
+        public void CancelRepair(bool isRepairStarted, out int brokenDetailsCost)
         {
-            int fineForDetails = 0;
-            int fixedFine = 100;
+            brokenDetailsCost = 0;
 
             if (isRepairStarted)
             {
-                fixedFine = 0;
-
                 for (int i = 0; i < _detailsList.Count; i++)
                 {
                     if (_detailsList[i].IsBroken)
                     {
-                        fineForDetails += _detailsList[i].Cost;
+                        brokenDetailsCost += _detailsList[i].Cost;
                     }
                 }
             }
-
-            totalFine = fineForDetails + fixedFine;
-            Console.WriteLine($"Вы отказались от ремонта автомобиля, штраф составит: {totalFine}");
         }
     }
 
